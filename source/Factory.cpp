@@ -1,4 +1,6 @@
 #include "defines.hpp"
+#include "Factory.hpp"
+#include "Job.hpp"
 
 vector<float> Factory::speeds(1, 0.0);
 
