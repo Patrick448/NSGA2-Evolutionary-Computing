@@ -1,4 +1,3 @@
-#include "defines.hpp"
 #include "Job.hpp"
 
 Job::Job(Job *j) {

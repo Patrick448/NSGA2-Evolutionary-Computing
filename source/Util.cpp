@@ -2,11 +2,7 @@
 // Created by patri on 12/01/2023.
 //
 
-#include "defines.hpp"
 #include "Util.hpp"
-#include "Individual.hpp"
-#include "Factory.hpp"
-#include "Job.hpp"
 
 vector<Individual*> Util::allocatedIndividuals;
 

@@ -2,6 +2,7 @@
 #define FACTORY_HPP
 
 #include "defines.hpp"
+#include "Job.hpp"
 
 class Factory
 {
@@ -16,8 +17,8 @@ private:
     int m;                // Number of machines
     static vector<float> speeds;
     bool jobs_start_times_initialized;
-    bool TFTChanged =true;
-    bool TECChanged =true;
+    bool TFTChanged = true;
+    bool TECChanged = true;
 
 public:
     Factory(int id, int m); // Constructor (id = factory index, m = number of machines)

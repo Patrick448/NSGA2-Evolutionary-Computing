@@ -2,7 +2,6 @@
 #define PROBLEM_HPP
 
 #include "defines.hpp"
-#include "Individual.hpp"
 
 class Problem
 {

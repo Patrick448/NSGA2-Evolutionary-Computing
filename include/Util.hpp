@@ -6,6 +6,8 @@
 #define UTIL_H
 
 #include "defines.hpp"
+#include "Individual.hpp"
+#include "Factory.hpp"
 
 class Util {
 

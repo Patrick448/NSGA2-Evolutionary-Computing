@@ -2,6 +2,8 @@
 #define Individual_HPP
 
 #include "defines.hpp"
+#include "Factory.hpp"
+#include "Job.hpp"
 
 class Individual
 {

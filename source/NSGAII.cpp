@@ -1,6 +1,4 @@
 #include "NSGAII.hpp"
-#include "Factory.hpp"
-#include "Job.hpp"
 #include "Util.hpp"
 
 NSGAII::NSGAII(Problem *problem)

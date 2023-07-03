@@ -1,8 +1,5 @@
-#include "defines.hpp"
 #include "Individual.hpp"
 #include "Util.hpp"
-#include "Factory.hpp"
-#include "Job.hpp"
 
 Individual::Individual(Individual *sol) {
     this->V = sol->V;
