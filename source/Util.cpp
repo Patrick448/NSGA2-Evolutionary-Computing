@@ -3,10 +3,14 @@
 //
 
 #include "defines.hpp"
+#include "Util.hpp"
+#include "Individual.hpp"
+#include "Factory.hpp"
+#include "Job.hpp"
 
-vector<Solution*> Util::allocatedSolutions;
+vector<Individual*> Util::allocatedIndividuals;
 
-vector<vector<Solution*>> Util::fastNonDominatedSort(vector<Solution*> population) {
+vector<vector<Individual*>> Util::fastNonDominatedSort(vector<Individual*> population) {
 
     vector<vector<int>> fronts(1);
     vector<vector<int>> dominatedBy(population.size());
@@ -40,7 +44,7 @@ vector<vector<Solution*>> Util::fastNonDominatedSort(vector<Solution*> populatio
             for(int k=0; k<dominatedBy[frontSolId].size(); k++){ //itera por cada solução dominada pela de indice frontSolId
                 int dominatedSolIndex = dominatedBy[frontSolId][k]; // id de cada solução dominada por frontSolId
 
-                Solution *s = population[dominatedSolIndex]; // cada solução dominada por frontSolId
+                Individual *s = population[dominatedSolIndex]; // cada solução dominada por frontSolId
 
                 s->incrementDominationCounter(-1);
 
@@ -54,22 +58,22 @@ vector<vector<Solution*>> Util::fastNonDominatedSort(vector<Solution*> populatio
         fronts.push_back(nextFront);
     }
 
-    vector<vector<Solution*>> solutionFronts(fronts.size());
+    vector<vector<Individual*>> IndividualFronts(fronts.size());
     for(int i=0; i< fronts.size(); i++){
-        vector<Solution*> front(fronts[i].size());
+        vector<Individual*> front(fronts[i].size());
         for(int j=0; j < fronts[i].size(); j++){
             front[j] = population[fronts[i][j]];
         }
-        solutionFronts[i] = front;
+        IndividualFronts[i] = front;
     }
 
-    solutionFronts.pop_back();
-    return solutionFronts;
+    IndividualFronts.pop_back();
+    return IndividualFronts;
 }
-Solution* extremeTEC(vector<Solution*> &v, bool maxExtreme)
+Individual* extremeTEC(vector<Individual*> &v, bool maxExtreme)
 {
     float extreme;
-    Solution* extremeSolution;
+    Individual* extremeIndividual;
 
     if(maxExtreme){
         extreme=0;
@@ -81,23 +85,23 @@ Solution* extremeTEC(vector<Solution*> &v, bool maxExtreme)
         if(maxExtreme){
             if(v[i]->getTEC() > extreme){
                 extreme = v[i]->getTEC();
-                extremeSolution = v[i];
+                extremeIndividual = v[i];
             }
         }else{
             if(v[i]->getTEC() < extreme){
                 extreme = v[i]->getTEC();
-                extremeSolution = v[i];
+                extremeIndividual = v[i];
             }
         }
     }
 
-    return extremeSolution;
+    return extremeIndividual;
 }
 
 
-Solution* Util::maxTECSol(vector<Solution*> &v){
+Individual* Util::maxTECSol(vector<Individual*> &v){
     float max=0;
-    Solution* sol;
+    Individual* sol;
 
     for(int i=0; i<v.size(); i++){
         if(v[i]->getTEC() > max){
@@ -108,9 +112,9 @@ Solution* Util::maxTECSol(vector<Solution*> &v){
     return sol;
 }
 
-Solution* Util::maxTFTSol(vector<Solution*> &v){
+Individual* Util::maxTFTSol(vector<Individual*> &v){
     float max=0;
-    Solution* sol;
+    Individual* sol;
 
     for(int i=0; i<v.size(); i++){
         if(v[i]->getTFT() > max){
@@ -122,9 +126,9 @@ Solution* Util::maxTFTSol(vector<Solution*> &v){
 }
 
 
-Solution* Util::minTECSol(vector<Solution*> &v){
+Individual* Util::minTECSol(vector<Individual*> &v){
     float min=INFINITY;
-    Solution* sol;
+    Individual* sol;
 
     for(int i=0; i<v.size(); i++){
         if(v[i]->getTEC() < min){
@@ -135,9 +139,9 @@ Solution* Util::minTECSol(vector<Solution*> &v){
     return sol;
 }
 
-Solution* Util::minTFTSol(vector<Solution*> &v){
+Individual* Util::minTFTSol(vector<Individual*> &v){
     float min=INFINITY;
-    Solution* sol;
+    Individual* sol;
 
     for(int i=0; i<v.size(); i++){
         if(v[i]->getTFT() < min){
@@ -150,7 +154,7 @@ Solution* Util::minTFTSol(vector<Solution*> &v){
 
 
 
-float euclideanDistance(Solution* sol1, Solution* sol2){
+float euclideanDistance(Individual* sol1, Individual* sol2){
     float sol1Y = sol1->getTEC();
     float sol1X = sol1->getTFT();
     float sol2Y = sol2->getTEC();
@@ -160,7 +164,7 @@ float euclideanDistance(Solution* sol1, Solution* sol2){
     return distance;
 }
 
-float normalizedEuclideanDistance(Solution* sol1, Solution* sol2, float maxTFT, float minTFT, float maxTEC, float minTEC){
+float normalizedEuclideanDistance(Individual* sol1, Individual* sol2, float maxTFT, float minTFT, float maxTEC, float minTEC){
     float sol1TEC = sol1->getTEC();
     float sol1TFT = sol1->getTFT();
     float sol2TEC = sol2->getTEC();
@@ -174,7 +178,7 @@ float normalizedEuclideanDistance(Solution* sol1, Solution* sol2, float maxTFT, 
     return distance;
 }
 
-float Util::DMetric(vector<Solution*> &PF, vector<Solution*> &A){
+float Util::DMetric(vector<Individual*> &PF, vector<Individual*> &A){
 
     float sum = 0;
     for(int i=0; i < PF.size(); i++){
@@ -191,7 +195,7 @@ float Util::DMetric(vector<Solution*> &PF, vector<Solution*> &A){
     return sum/PF.size();
 }
 
-float Util::GDMetric(vector<Solution*> &PF, vector<Solution*> &A){
+float Util::GDMetric(vector<Individual*> &PF, vector<Individual*> &A){
     float minTEC = minTECSol(PF)->getTEC();
     float minTFT = minTFTSol(PF)->getTFT();
     float maxTEC = maxTECSol(PF)->getTEC();
@@ -212,7 +216,7 @@ float Util::GDMetric(vector<Solution*> &PF, vector<Solution*> &A){
     return sqrtf(sum)/A.size();
 }
 
-float Util::IGDMetric(vector<Solution*> &PF, vector<Solution*> &A){
+float Util::IGDMetric(vector<Individual*> &PF, vector<Individual*> &A){
     float minTEC = minTECSol(PF)->getTEC();
     float minTFT = minTFTSol(PF)->getTFT();
     float maxTEC = maxTECSol(PF)->getTEC();
@@ -236,7 +240,7 @@ float Util::IGDMetric(vector<Solution*> &PF, vector<Solution*> &A){
 
 
 
-float Util::SMetric(vector<Solution*> &PF, vector<Solution*> &A) {
+float Util::SMetric(vector<Individual*> &PF, vector<Individual*> &A) {
 
     float diSum, dMean = 0;
     vector<float> d;
@@ -295,15 +299,15 @@ string Util::generateCSV(Factory* factory)
     return csvString;
 }
 
-void Util::allocate(Solution* sol){
-    Util::allocatedSolutions.push_back(sol);
+void Util::allocate(Individual* sol){
+    Util::allocatedIndividuals.push_back(sol);
 
 }
 
 void Util::deallocate(){
-    for(Solution* s: Util::allocatedSolutions){
+    for(Individual* s: Util::allocatedIndividuals){
         delete s;
     }
 
-    Util::allocatedSolutions.clear();
+    Util::allocatedIndividuals.clear();
 }

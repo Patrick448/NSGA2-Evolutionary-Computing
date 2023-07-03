@@ -74,9 +74,6 @@ def generate_instance_files(path="", instance_list=[]):
         file = open(f"{path}/{instance.num_factories}-{instance.num_machines}-{instance.num_jobs}__{i%10}.txt", mode='x')
         file.write(instance.to_text())
         file.close()
-        #offset += offset
-        #if offset%60 == 0:
-        #    offset = 60
 
 
 def create_dir_if_not_exists(path):

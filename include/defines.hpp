@@ -13,16 +13,9 @@
 #include <ctime>
 #include <sys/time.h>
 #include <time.h>
+#include <stdlib.h>
 
 #include "random/Xoshiro256plus.h"
-
-#include "Job.hpp"
-#include "Machine.hpp"  
-#include "Factory.hpp"
-#include "Problem.hpp"
-#include "read.hpp"
-#include "Solution.hpp"
-#include "Util.h"
 
 using namespace std;
 

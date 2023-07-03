@@ -1,4 +1,5 @@
 #include "defines.hpp"
+#include "Problem.hpp"
 
 vector<float> floatVectorFromText(string text)
 {
