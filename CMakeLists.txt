@@ -21,4 +21,8 @@ add_executable(Green_Scheduling_Distributed_Flowshop_Problem
         source/read.cpp
         source/Individual.cpp
         include/Util.hpp
-        source/Util.cpp)
+        source/Util.cpp
+        source/NSGAII.cpp
+        include/NSGAII.hpp
+
+        )
