@@ -2,54 +2,42 @@
 #include "Util.hpp"
 #include <bits/stdc++.h>
 
-NSGAII::NSGAII(Problem *problem, float crossoverRate, float mutationRate)
-{
+NSGAII::NSGAII(Problem *problem, float crossoverRate, float mutationRate) {
     this->problem = problem;
     this->crossoverRate = crossoverRate;
     this->mutationRate = mutationRate;
 }
 
-NSGAII::~NSGAII()
-{
+NSGAII::~NSGAII() {
 
-    if (this->population.size() > 0)
-    {
-        for (int i = 0; i < this->population.size(); i++)
-        {
+    if (this->population.size() > 0) {
+        for (int i = 0; i < this->population.size(); i++) {
             delete this->population[i];
         }
     }
 }
 
-vector<Individual *> NSGAII::getPopulation()
-{
+vector<Individual *> NSGAII::getPopulation() {
     return this->population;
 }
 
-Individual *NSGAII::getIndividual(int i)
-{
+Individual *NSGAII::getIndividual(int i) {
     return this->population[i];
 }
 
-vector<Individual *> NSGAII::getParetoArchive()
-{
+vector<Individual *> NSGAII::getParetoArchive() {
     return this->paretoArchive;
 }
 
-void NSGAII::updateArchive(Individual *individual)
-{
-    for (int i = 0; i < this->paretoArchive.size(); i++)
-    {
-        if (paretoArchive[i]->dominates(individual))
-        {
+void NSGAII::updateArchive(Individual *individual) {
+    for (int i = 0; i < this->paretoArchive.size(); i++) {
+        if (paretoArchive[i]->dominates(individual)) {
             return;
         }
     }
 
-    for (int i = 0; i < this->paretoArchive.size(); i++)
-    {
-        if (individual->dominates(paretoArchive[i]))
-        {
+    for (int i = 0; i < this->paretoArchive.size(); i++) {
+        if (individual->dominates(paretoArchive[i])) {
             paretoArchive.erase(paretoArchive.begin() + i);
         }
     }
@@ -57,44 +45,36 @@ void NSGAII::updateArchive(Individual *individual)
     paretoArchive.push_back(individual);
 }
 
-void NSGAII::construtivo()
-{
+void NSGAII::construtivo() {
 
-    for (int i = 0; i < 4; i++)
-    {
+    for (int i = 0; i < 4; i++) {
         this->population.push_back(this->balancedRandomIndividualGenerator(i));
     }
 }
 
-bool compareJobsByTotalProcessingTime(Job *a, Job *b)
-{
+bool compareJobsByTotalProcessingTime(Job *a, Job *b) {
     return a->getTotalP() < b->getTotalP();
 }
 
-bool compareIndividualsByTFT(Individual *a, Individual *b)
-{
+bool compareIndividualsByTFT(Individual *a, Individual *b) {
     return a->getTFT() < b->getTFT();
 }
 
-bool compareIndividualsByTEC(Individual *a, Individual *b)
-{
+bool compareIndividualsByTEC(Individual *a, Individual *b) {
     return a->getTEC() < b->getTEC();
 }
 
-Individual *NSGAII::maxSMinTFT()
-{
+Individual *NSGAII::maxSMinTFT() {
     Individual *individual = new Individual(this->problem->getN(), this->problem->getM(), this->problem->getF());
     vector<Job *> jobs(this->problem->getN());
     int highestSpeed = this->problem->getAllSpeeds().size() - 1;
 
-    for (int i = 0; i < this->problem->getN(); i++)
-    {
+    for (int i = 0; i < this->problem->getN(); i++) {
         jobs[i] = new Job(i, this->problem->getM());
         vector<int> jobTimeByMachine(this->problem->getM());
         vector<float> jobSpeedByMachine(this->problem->getM());
 
-        for (int j = 0; j < this->problem->getM(); j++)
-        {
+        for (int j = 0; j < this->problem->getM(); j++) {
             jobTimeByMachine[j] = this->problem->getAllT()[i][j];
             jobSpeedByMachine[j] = this->problem->getAllSpeeds()[highestSpeed];
         }
@@ -105,8 +85,7 @@ Individual *NSGAII::maxSMinTFT()
     sort(jobs.begin(), jobs.end(),
          compareJobsByTotalProcessingTime); // generate job permutation lambda according to non-descending order of Ti (total job i processing time)
 
-    for (int i = 0; i < this->problem->getF(); i++)
-    { // assign the first f jobs to each one of the factories
+    for (int i = 0; i < this->problem->getF(); i++) { // assign the first f jobs to each one of the factories
         // factories[i] = new Factory(i, this->problem->get_m());
         individual->getFactory(i)->addJobAtLastPosition(jobs[i]);
     }
@@ -120,26 +99,22 @@ Individual *NSGAII::maxSMinTFT()
     Factory *minTFTFactory;
 
     // for each factory f
-    for (int j = this->problem->getF(); j < jobs.size(); j++)
-    { // test job j at all the possible positions of PI_k (the factory)
+    for (int j = this->problem->getF();
+         j < jobs.size(); j++) { // test job j at all the possible positions of PI_k (the factory)
         float minIncreaseTFT = INFINITY;
         float minTFTPos = 0;
 
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             testFactory = individual->getFactory(f)->minTFTAfterInsertion(jobs[j]);
             testFactoryTFT = testFactory->getTFT();
             previousTFT = individual->getFactory(f)->getTFT();
             tftVariation = testFactoryTFT - previousTFT;
 
-            if (tftVariation < minIncreaseTFT)
-            {
+            if (tftVariation < minIncreaseTFT) {
                 minIncreaseTFT = tftVariation;
                 minTFTFactory = testFactory;
                 minTFTPos = f;
-            }
-            else
-            {
+            } else {
                 // testFactory->clearJobs();
                 delete testFactory;
             }
@@ -149,36 +124,31 @@ Individual *NSGAII::maxSMinTFT()
         individual->replaceFactory(minTFTPos, minTFTFactory); // replaces old factory and deletes it
     }
 
-    for (int i = 0; i < this->problem->getF(); i++)
-    {
+    for (int i = 0; i < this->problem->getF(); i++) {
         individual->getFactory(i)->speedDown();
     }
 
     // Initialize the jobs start times of each factory
-    for (int f = 0; f < this->problem->getF(); f++)
-    {
+    for (int f = 0; f < this->problem->getF(); f++) {
         individual->getFactory(f)->initializeJobsStartTimes();
     }
 
     return individual;
 }
 
-Individual *NSGAII::randSMinTFT(int seed)
-{
+Individual *NSGAII::randSMinTFT(int seed) {
     Individual *individual = new Individual(this->problem->getN(), this->problem->getM(), this->problem->getF());
     vector<Job *> jobs(this->problem->getN());
     Xoshiro256plus rand(/*time(NULL) +*/ seed);
     int highestSpeed = this->problem->getAllSpeeds().size() - 1;
 
-    for (int i = 0; i < this->problem->getN(); i++)
-    {
+    for (int i = 0; i < this->problem->getN(); i++) {
 
         jobs[i] = new Job(i, this->problem->getM());
         vector<int> jobTimeByMachine(this->problem->getM());
         vector<float> jobSpeedByMachine(this->problem->getM());
 
-        for (int j = 0; j < this->problem->getM(); j++)
-        {
+        for (int j = 0; j < this->problem->getM(); j++) {
             int randomIndex = rand.next() % this->problem->getAllSpeeds().size();
             jobTimeByMachine[j] = this->problem->getAllT()[i][j];
             jobSpeedByMachine[j] = this->problem->getAllSpeeds()[randomIndex];
@@ -190,8 +160,7 @@ Individual *NSGAII::randSMinTFT(int seed)
     sort(jobs.begin(), jobs.end(),
          compareJobsByTotalProcessingTime); // generate job permutation lambda according to non-descending order of Ti (total job i processing time)
 
-    for (int i = 0; i < this->problem->getF(); i++)
-    { // assign the first f jobs to each one of the factories
+    for (int i = 0; i < this->problem->getF(); i++) { // assign the first f jobs to each one of the factories
         // factories[i] = new Factory(i, this->problem->get_m());
         individual->getFactory(i)->addJobAtLastPosition(jobs[i]);
     }
@@ -205,26 +174,22 @@ Individual *NSGAII::randSMinTFT(int seed)
     Factory *minTFTFactory;
 
     // for each factory f
-    for (int j = this->problem->getF(); j < jobs.size(); j++)
-    { // test job j at all the possible positions of PI_k (the factory)
+    for (int j = this->problem->getF();
+         j < jobs.size(); j++) { // test job j at all the possible positions of PI_k (the factory)
         float minIncreaseTFT = INFINITY;
         float minTFTPos = 0;
 
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             testFactory = individual->getFactory(f)->minTFTAfterInsertion(jobs[j]);
             testFactoryTFT = testFactory->getTFT();
             previousTFT = individual->getFactory(f)->getTFT();
             tftVariation = testFactoryTFT - previousTFT;
 
-            if (tftVariation < minIncreaseTFT)
-            {
+            if (tftVariation < minIncreaseTFT) {
                 minIncreaseTFT = tftVariation;
                 minTFTFactory = testFactory;
                 minTFTPos = f;
-            }
-            else
-            {
+            } else {
                 // testFactory->clearJobs();
                 delete testFactory;
             }
@@ -234,35 +199,30 @@ Individual *NSGAII::randSMinTFT(int seed)
         individual->replaceFactory(minTFTPos, minTFTFactory); // replaces old factory and deletes it
     }
 
-    for (int i = 0; i < this->problem->getF(); i++)
-    {
+    for (int i = 0; i < this->problem->getF(); i++) {
         individual->getFactory(i)->speedDown();
     }
     // this->population.push_back(individual);
 
     // Initialize the of each factory
-    for (int f = 0; f < this->problem->getF(); f++)
-    {
+    for (int f = 0; f < this->problem->getF(); f++) {
         individual->getFactory(f)->initializeJobsStartTimes();
     }
 
     return individual;
 }
 
-Individual *NSGAII::minSMinTEC()
-{
+Individual *NSGAII::minSMinTEC() {
     Individual *individual = new Individual(this->problem->getN(), this->problem->getM(), this->problem->getF());
     vector<Job *> jobs(this->problem->getN());
 
     // First, all the speeds set to the minimum value
-    for (int i = 0; i < this->problem->getN(); i++)
-    {
+    for (int i = 0; i < this->problem->getN(); i++) {
         jobs[i] = new Job(i, this->problem->getM());
         vector<int> jobTimeByMachine(this->problem->getM());
         vector<float> jobSpeedByMachine(this->problem->getM());
 
-        for (int j = 0; j < this->problem->getM(); j++)
-        {
+        for (int j = 0; j < this->problem->getM(); j++) {
             jobTimeByMachine[j] = this->problem->getAllT()[i][j];
             jobSpeedByMachine[j] = this->problem->getAllSpeeds()[0]; // minimum speed
         }
@@ -274,8 +234,7 @@ Individual *NSGAII::minSMinTEC()
     sort(jobs.begin(), jobs.end(), compareJobsByTotalProcessingTime);
 
     // Assign the first f jobs to each one of the factories
-    for (int k = 0; k < this->problem->getF(); k++)
-    {
+    for (int k = 0; k < this->problem->getF(); k++) {
         individual->getFactory(k)->addJobAtLastPosition(jobs[k]);
     }
 
@@ -289,27 +248,22 @@ Individual *NSGAII::minSMinTEC()
     Factory *minTECFactory;
 
     // For each factory f
-    for (int i = this->problem->getF(); i < jobs.size(); i++)
-    {
+    for (int i = this->problem->getF(); i < jobs.size(); i++) {
         float minIncreaseTEC = INFINITY;
         float minTECPos = 0;
 
         // Test job j at all the possible positions of PI_k (the factory)
-        for (int k = 0; k < this->problem->getF(); k++)
-        {
+        for (int k = 0; k < this->problem->getF(); k++) {
             testFactory = individual->getFactory(k)->minTECAfterInsertion(jobs[i]);
             testFactoryTEC = testFactory->getTEC();
             previousTEC = individual->getFactory(k)->getTEC();
             tecVariation = testFactoryTEC - previousTEC;
 
-            if (tecVariation < minIncreaseTEC)
-            {
+            if (tecVariation < minIncreaseTEC) {
                 minIncreaseTEC = tecVariation;
                 minTECFactory = testFactory;
                 minTECPos = k;
-            }
-            else
-            {
+            } else {
                 // testFactory->clearJobs();
                 delete testFactory;
             }
@@ -320,8 +274,7 @@ Individual *NSGAII::minSMinTEC()
     }
 
     // Initialize the start_times of each factory and then right shift
-    for (int f = 0; f < this->problem->getF(); f++)
-    {
+    for (int f = 0; f < this->problem->getF(); f++) {
         individual->getFactory(f)->initializeJobsStartTimes();
         individual->getFactory(f)->rightShift();
     }
@@ -329,22 +282,19 @@ Individual *NSGAII::minSMinTEC()
     return individual;
 }
 
-Individual *NSGAII::randSMinTEC(int seed)
-{
+Individual *NSGAII::randSMinTEC(int seed) {
     Xoshiro256plus rand(/*time(NULL) +*/ seed);
 
     Individual *individual = new Individual(this->problem->getN(), this->problem->getM(), this->problem->getF());
     vector<Job *> jobs(this->problem->getN());
 
     // First, all the speeds set to the minimum value
-    for (int i = 0; i < this->problem->getN(); i++)
-    {
+    for (int i = 0; i < this->problem->getN(); i++) {
         jobs[i] = new Job(i, this->problem->getM());
         vector<int> jobTimeByMachine(this->problem->getM());
         vector<float> jobSpeedByMachine(this->problem->getM());
 
-        for (int j = 0; j < this->problem->getM(); j++)
-        {
+        for (int j = 0; j < this->problem->getM(); j++) {
             int randomSpeedIndex = rand.next() % this->problem->getAllSpeeds().size();
             jobTimeByMachine[j] = this->problem->getAllT()[i][j];
             jobSpeedByMachine[j] = this->problem->getAllSpeeds()[randomSpeedIndex]; // random speed
@@ -357,8 +307,7 @@ Individual *NSGAII::randSMinTEC(int seed)
     sort(jobs.begin(), jobs.end(), compareJobsByTotalProcessingTime);
 
     // Assign the first f jobs to each one of the factories
-    for (int k = 0; k < this->problem->getF(); k++)
-    {
+    for (int k = 0; k < this->problem->getF(); k++) {
         individual->getFactory(k)->addJobAtLastPosition(jobs[k]);
     }
 
@@ -372,27 +321,22 @@ Individual *NSGAII::randSMinTEC(int seed)
     Factory *minTECFactory;
 
     // For each factory f
-    for (int i = this->problem->getF(); i < jobs.size(); i++)
-    {
+    for (int i = this->problem->getF(); i < jobs.size(); i++) {
         float minIncreaseTEC = INFINITY;
         float minTECPos = 0;
 
         // Test job j at all the possible positions of PI_k (the factory)
-        for (int k = 0; k < this->problem->getF(); k++)
-        {
+        for (int k = 0; k < this->problem->getF(); k++) {
             testFactory = individual->getFactory(k)->minTECAfterInsertion(jobs[i]);
             testFactoryTEC = testFactory->getTEC();
             previousTEC = individual->getFactory(k)->getTEC();
             tecVariation = testFactoryTEC - previousTEC;
 
-            if (tecVariation < minIncreaseTEC)
-            {
+            if (tecVariation < minIncreaseTEC) {
                 minIncreaseTEC = tecVariation;
                 minTECFactory = testFactory;
                 minTECPos = k;
-            }
-            else
-            {
+            } else {
                 // testFactory->clearJobs();
                 delete testFactory;
             }
@@ -403,8 +347,7 @@ Individual *NSGAII::randSMinTEC(int seed)
     }
 
     // Initialize the start_times of each factory and then right shift
-    for (int f = 0; f < this->problem->getF(); f++)
-    {
+    for (int f = 0; f < this->problem->getF(); f++) {
         individual->getFactory(f)->initializeJobsStartTimes();
         individual->getFactory(f)->rightShift();
     }
@@ -412,8 +355,7 @@ Individual *NSGAII::randSMinTEC(int seed)
     return individual;
 }
 
-Individual *NSGAII::balancedRandomIndividualGenerator(int s)
-{
+Individual *NSGAII::balancedRandomIndividualGenerator(int s) {
     Xoshiro256plus rand(/*time(NULL) +*/ s);
 
     Individual *individual = new Individual(this->problem->getN(), this->problem->getM(), this->problem->getF());
@@ -422,30 +364,26 @@ Individual *NSGAII::balancedRandomIndividualGenerator(int s)
     vector<bool> jobAllocated(this->problem->getN(), false);
 
     vector<int> jobsToAllocate;
-    for (size_t i = 0; i < this->problem->getN(); i++)
-    {
+    for (size_t i = 0; i < this->problem->getN(); i++) {
         jobsToAllocate.push_back(i);
     }
 
     // Allocate the jobs equally to the factories
     int factoryId = 0;
-    while (jobsToAllocate.size())
-    {
+    while (jobsToAllocate.size()) {
         int randomNum = rand.next() % jobsToAllocate.size();
         Job *job = new Job(jobsToAllocate[randomNum], this->problem->getM());
         job->setT(this->problem->getAllT()[jobsToAllocate[randomNum]]);
 
         // Set a random speed for each machine
-        for (int j = 0; j < this->problem->getM(); j++)
-        {
+        for (int j = 0; j < this->problem->getM(); j++) {
             int randomNum = rand.next() % this->problem->getAllSpeeds().size();
             individual->setV(job->getId(), j, this->problem->getAllSpeeds()[randomNum]);
             job->setVForMachine(j, this->problem->getAllSpeeds()[randomNum]);
         }
 
         // Select the factory
-        if (factoryId == this->problem->getF())
-        {
+        if (factoryId == this->problem->getF()) {
             factoryId = 0;
         }
 
@@ -467,16 +405,14 @@ Individual *NSGAII::balancedRandomIndividualGenerator(int s)
     }
 
     // Initialize the of each factory
-    for (int f = 0; f < this->problem->getF(); f++)
-    {
+    for (int f = 0; f < this->problem->getF(); f++) {
         individual->getFactory(f)->initializeJobsStartTimes();
     }
 
     return individual;
 }
 
-Individual *NSGAII::totalRandomIndividualGenerator(int s)
-{
+Individual *NSGAII::totalRandomIndividualGenerator(int s) {
     Xoshiro256plus rand(/*time(NULL) +*/ s);
 
     Individual *individual = new Individual(this->problem->getN(), this->problem->getM(), this->problem->getF());
@@ -485,21 +421,18 @@ Individual *NSGAII::totalRandomIndividualGenerator(int s)
     vector<bool> jobAllocated(this->problem->getN(), false);
 
     vector<int> jobsToAllocate;
-    for (size_t i = 0; i < this->problem->getN(); i++)
-    {
+    for (size_t i = 0; i < this->problem->getN(); i++) {
         jobsToAllocate.push_back(i);
     }
 
     // Allocate one job in each factory
-    for (int i = 0; i < this->problem->getF(); i++)
-    {
+    for (int i = 0; i < this->problem->getF(); i++) {
         int randomNum = rand.next() % jobsToAllocate.size();
         Job *job = new Job(jobsToAllocate[randomNum], this->problem->getM());
         job->setT(this->problem->getAllT()[jobsToAllocate[randomNum]]);
 
         // Set a random speed for each machine
-        for (int j = 0; j < this->problem->getM(); j++)
-        {
+        for (int j = 0; j < this->problem->getM(); j++) {
             int randomNum = rand.next() % this->problem->getAllSpeeds().size();
             individual->setV(job->getId(), j, this->problem->getAllSpeeds()[randomNum]);
             job->setVForMachine(j, this->problem->getAllSpeeds()[randomNum]);
@@ -509,15 +442,13 @@ Individual *NSGAII::totalRandomIndividualGenerator(int s)
     }
 
     // Allocate the remaining jobs randomly
-    while (jobsToAllocate.size())
-    {
+    while (jobsToAllocate.size()) {
         int randomNum = rand.next() % jobsToAllocate.size();
         Job *job = new Job(jobsToAllocate[randomNum], this->problem->getM());
         job->setT(this->problem->getAllT()[jobsToAllocate[randomNum]]);
 
         // Set a random speed for each machine
-        for (int j = 0; j < this->problem->getM(); j++)
-        {
+        for (int j = 0; j < this->problem->getM(); j++) {
             int randomNum = rand.next() % this->problem->getAllSpeeds().size();
             individual->setV(job->getId(), j, this->problem->getAllSpeeds()[randomNum]);
             job->setVForMachine(j, this->problem->getAllSpeeds()[randomNum]);
@@ -537,88 +468,74 @@ Individual *NSGAII::totalRandomIndividualGenerator(int s)
     }
 
     // Initialize the of jobs strat times each factory
-    for (int f = 0; f < this->problem->getF(); f++)
-    {
+    for (int f = 0; f < this->problem->getF(); f++) {
         individual->getFactory(f)->initializeJobsStartTimes();
     }
 
     return individual;
 }
 
-void NSGAII::printPopulation()
-{
+void NSGAII::printPopulation() {
     cout << "\nPOPULATION "
          << "(with " << this->population.size() << " individuals)" << endl;
 
-    for (size_t i = 0; i < this->population.size(); i++)
-    {
+    for (size_t i = 0; i < this->population.size(); i++) {
         cout << "\nIndividual " << i << endl;
         this->population[i]->printIndividual();
     }
 }
 
-string NSGAII::generatePopulationCSVString()
-{
+string NSGAII::generatePopulationCSVString() {
     string str = "id, TFT, TEC, level, cd\n";
     Individual *individual;
 
-    for (size_t i = 0; i < this->population.size(); i++)
-    {
+    for (size_t i = 0; i < this->population.size(); i++) {
         individual = this->population[i];
-        str += to_string(i) + "," + to_string(individual->getTFT()) + "," + to_string(individual->getTEC()) + "," + to_string(individual->getDominationRank()) + "," + to_string(individual->getCrowdingDistance()) + "\n";
+        str += to_string(i) + "," + to_string(individual->getTFT()) + "," + to_string(individual->getTEC()) + "," +
+               to_string(individual->getDominationRank()) + "," + to_string(individual->getCrowdingDistance()) + "\n";
     }
     return str;
 }
 
-vector<vector<Individual *>> NSGAII::fastNonDominatedSort(vector<Individual *> population)
-{
+vector<vector<Individual *>> NSGAII::fastNonDominatedSort(vector<Individual *> population) {
 
     vector<vector<int>> fronts(1);
     vector<vector<int>> dominatedBy(population.size());
 
-    for (int i = 0; i < population.size(); i++)
-    {
+    for (int i = 0; i < population.size(); i++) {
         population[i]->setDominationCounter(0);
         // population[i]->setDominationRank(-1);
 
-        for (int j = 0; j < population.size(); j++)
-        {
-            if (population[i]->dominates(population[j]))
-            {
+        for (int j = 0; j < population.size(); j++) {
+            if (population[i]->dominates(population[j])) {
                 dominatedBy[i].push_back(j);
-            }
-            else if (population[j]->dominates(population[i]))
-            {
+            } else if (population[j]->dominates(population[i])) {
                 population[i]->incrementDominationCounter(1);
             }
         }
 
-        if (population[i]->getDominationCounter() == 0)
-        {
+        if (population[i]->getDominationCounter() == 0) {
             population[i]->setDominationRank(1);
             fronts[0].push_back(i);
         }
     }
 
     int i = 0;
-    while (!fronts[i].empty())
-    {
+    while (!fronts[i].empty()) {
         vector<int> nextFront;
-        for (int j = 0; j < fronts[i].size(); j++)
-        {
+        for (int j = 0; j < fronts[i].size(); j++) {
             int frontSolId = fronts[i][j]; // id (indices) de cada individualução na fronteira atual
 
             for (int k = 0;
-                 k < dominatedBy[frontSolId].size(); k++)
-            {                                                       // itera por cada individualução dominada pela de indice frontSolId
+                 k <
+                 dominatedBy[frontSolId].size(); k++) {                                                       // itera por cada individualução dominada pela de indice frontSolId
                 int dominatedSolIndex = dominatedBy[frontSolId][k]; // id de cada individualução dominada por frontSolId
 
                 Individual *s = population[dominatedSolIndex]; // cada individualução dominada por frontSolId
 
                 s->incrementDominationCounter(-1);
 
-                if (s->getDominationCounter() == 0)
-                {
+                if (s->getDominationCounter() == 0) {
                     s->setDominationRank(i + 2);
                     nextFront.push_back(dominatedSolIndex);
                 }
@@ -629,11 +546,9 @@ vector<vector<Individual *>> NSGAII::fastNonDominatedSort(vector<Individual *> p
     }
 
     vector<vector<Individual *>> individualFronts(fronts.size());
-    for (int i = 0; i < fronts.size(); i++)
-    {
+    for (int i = 0; i < fronts.size(); i++) {
         vector<Individual *> front(fronts[i].size());
-        for (int j = 0; j < fronts[i].size(); j++)
-        {
+        for (int j = 0; j < fronts[i].size(); j++) {
             front[j] = population[fronts[i][j]];
         }
         individualFronts[i] = front;
@@ -644,55 +559,45 @@ vector<vector<Individual *>> NSGAII::fastNonDominatedSort(vector<Individual *> p
     return individualFronts;
 }
 
-vector<vector<Individual *>> NSGAII::fastNonDominatedSort()
-{
+vector<vector<Individual *>> NSGAII::fastNonDominatedSort() {
 
     vector<vector<int>> fronts(1);
     vector<vector<int>> dominatedBy(population.size());
 
-    for (int i = 0; i < population.size(); i++)
-    {
+    for (int i = 0; i < population.size(); i++) {
         population[i]->setDominationCounter(0);
         // population[i]->setDominationRank(-1);
 
-        for (int j = 0; j < population.size(); j++)
-        {
-            if (population[i]->dominates(population[j]))
-            {
+        for (int j = 0; j < population.size(); j++) {
+            if (population[i]->dominates(population[j])) {
                 dominatedBy[i].push_back(j);
-            }
-            else if (population[j]->dominates(population[i]))
-            {
+            } else if (population[j]->dominates(population[i])) {
                 population[i]->incrementDominationCounter(1);
             }
         }
 
-        if (population[i]->getDominationCounter() == 0)
-        {
+        if (population[i]->getDominationCounter() == 0) {
             population[i]->setDominationRank(1);
             fronts[0].push_back(i);
         }
     }
 
     int i = 0;
-    while (!fronts[i].empty())
-    {
+    while (!fronts[i].empty()) {
         vector<int> nextFront;
-        for (int j = 0; j < fronts[i].size(); j++)
-        {
+        for (int j = 0; j < fronts[i].size(); j++) {
             int frontSolId = fronts[i][j]; // id (indices) de cada individualução na fronteira atual
 
             for (int k = 0;
-                 k < dominatedBy[frontSolId].size(); k++)
-            {                                                       // itera por cada individualução dominada pela de indice frontSolId
+                 k <
+                 dominatedBy[frontSolId].size(); k++) {                                                       // itera por cada individualução dominada pela de indice frontSolId
                 int dominatedSolIndex = dominatedBy[frontSolId][k]; // id de cada individualução dominada por frontSolId
 
                 Individual *s = population[dominatedSolIndex]; // cada individualução dominada por frontSolId
 
                 s->incrementDominationCounter(-1);
 
-                if (s->getDominationCounter() == 0)
-                {
+                if (s->getDominationCounter() == 0) {
                     s->setDominationRank(i + 2);
                     nextFront.push_back(dominatedSolIndex);
                 }
@@ -703,11 +608,9 @@ vector<vector<Individual *>> NSGAII::fastNonDominatedSort()
     }
 
     vector<vector<Individual *>> individualFronts(fronts.size());
-    for (int i = 0; i < fronts.size(); i++)
-    {
+    for (int i = 0; i < fronts.size(); i++) {
         vector<Individual *> front(fronts[i].size());
-        for (int j = 0; j < fronts[i].size(); j++)
-        {
+        for (int j = 0; j < fronts[i].size(); j++) {
             front[j] = population[fronts[i][j]];
         }
         individualFronts[i] = front;
@@ -718,106 +621,85 @@ vector<vector<Individual *>> NSGAII::fastNonDominatedSort()
     return individualFronts;
 }
 
-void NSGAII::assignCrowdingDistance()
-{
+void NSGAII::assignCrowdingDistance() {
     int numObjectives = 2;
 
-    for (int i = 0; i < population.size(); i++)
-    {
+    for (int i = 0; i < population.size(); i++) {
         population[i]->setCrowdingDistance(0);
     }
 
-    for (int i = 0; i < numObjectives; i++)
-    {
+    for (int i = 0; i < numObjectives; i++) {
 
-        if (i == 0)
-        {
+        if (i == 0) {
             sort(population.begin(), population.end(), compareIndividualsByTFT);
             population[0]->setCrowdingDistance(INFINITY);
             population[population.size() - 1]->setCrowdingDistance(INFINITY);
             float maxTFT = population[population.size() - 1]->getTFT();
             float minTFT = population[0]->getTFT();
-            for (int j = 1; j < population.size() - 1; j++)
-            {
+            for (int j = 1; j < population.size() - 1; j++) {
                 float normalizedDistance =
-                    (population[j + 1]->getTFT() - population[j - 1]->getTFT()) / (maxTFT - minTFT);
+                        (population[j + 1]->getTFT() - population[j - 1]->getTFT()) / (maxTFT - minTFT);
                 population[j]->incrementCrowdingDistance(normalizedDistance);
             }
-        }
-        else
-        {
+        } else {
             sort(population.begin(), population.end(), compareIndividualsByTEC);
             population[0]->setCrowdingDistance(INFINITY);
             population[population.size() - 1]->setCrowdingDistance(INFINITY);
             float maxTEC = population[population.size() - 1]->getTEC();
             float minTEC = population[0]->getTEC();
 
-            for (int j = 1; j < population.size() - 1; j++)
-            {
+            for (int j = 1; j < population.size() - 1; j++) {
                 float normalizedDistance =
-                    (population[j + 1]->getTEC() - population[j - 1]->getTEC()) / (maxTEC - minTEC);
+                        (population[j + 1]->getTEC() - population[j - 1]->getTEC()) / (maxTEC - minTEC);
                 population[j]->incrementCrowdingDistance(normalizedDistance);
             }
         }
     }
 }
 
-void assignCrowdingDistance(vector<Individual *> population)
-{
+void assignCrowdingDistance(vector<Individual *> population) {
     int numObjectives = 2;
     int infinity = std::numeric_limits<int>::max();
 
-    for (int i = 0; i < population.size(); i++)
-    {
+    for (int i = 0; i < population.size(); i++) {
         population[i]->setCrowdingDistance(0);
     }
 
-    for (int i = 0; i < numObjectives; i++)
-    {
+    for (int i = 0; i < numObjectives; i++) {
 
-        if (i == 0)
-        {
+        if (i == 0) {
             sort(population.begin(), population.end(), compareIndividualsByTFT);
             population[0]->setCrowdingDistance(INFINITY);
             population[population.size() - 1]->setCrowdingDistance(INFINITY);
             float maxTFT = population[population.size() - 1]->getTFT();
             float minTFT = population[0]->getTFT();
-            for (int j = 1; j < population.size() - 1; j++)
-            {
+            for (int j = 1; j < population.size() - 1; j++) {
                 float normalizedDistance =
-                    (population[j + 1]->getTFT() - population[j - 1]->getTFT()) / (maxTFT - minTFT);
+                        (population[j + 1]->getTFT() - population[j - 1]->getTFT()) / (maxTFT - minTFT);
                 population[j]->incrementCrowdingDistance(normalizedDistance);
             }
-        }
-        else
-        {
+        } else {
             sort(population.begin(), population.end(), compareIndividualsByTEC);
             population[0]->setCrowdingDistance(INFINITY);
             population[population.size() - 1]->setCrowdingDistance(INFINITY);
             float maxTEC = population[population.size() - 1]->getTEC();
             float minTEC = population[0]->getTEC();
 
-            for (int j = 1; j < population.size() - 1; j++)
-            {
+            for (int j = 1; j < population.size() - 1; j++) {
                 float normalizedDistance =
-                    (population[j + 1]->getTEC() - population[j - 1]->getTEC()) / (maxTEC - minTEC);
+                        (population[j + 1]->getTEC() - population[j - 1]->getTEC()) / (maxTEC - minTEC);
                 population[j]->incrementCrowdingDistance(normalizedDistance);
             }
         }
     }
 }
 
-bool crowdedCompare(Individual *s1, Individual *s2)
-{
+bool crowdedCompare(Individual *s1, Individual *s2) {
 
-    if (s1->getDominationRank() < s2->getDominationRank())
-    {
+    if (s1->getDominationRank() < s2->getDominationRank()) {
         return true;
-    }
-    else if (s1->getDominationRank() == s2->getDominationRank())
-    {
-        if (s1->getCrowdingDistance() > s2->getCrowdingDistance())
-        {
+    } else if (s1->getDominationRank() == s2->getDominationRank()) {
+        if (s1->getCrowdingDistance() > s2->getCrowdingDistance()) {
             return true;
         }
         return false;
@@ -826,20 +708,17 @@ bool crowdedCompare(Individual *s1, Individual *s2)
     return false;
 }
 
-vector<Individual *> makeNewPop(vector<Individual *> parents, int seed, int n)
-{
+vector<Individual *> makeNewPop(vector<Individual *> parents, int seed, int n) {
     vector<Individual *> children;
     Xoshiro256plus rand(seed);
 
     vector<int> prob{1, 1, 1, 1, 0, 0, 0, 0, 0, 0}; // 1 chance of swap 0 chance of insertion
 
-    for (int i = 0; i < parents.size(); i++)
-    {
+    for (int i = 0; i < parents.size(); i++) {
 
         Individual *individual = new Individual(parents[i]);
 
-        for (int j = 0; j < n / 4; j++)
-        {
+        for (int j = 0; j < n / 4; j++) {
             int factory1Id = rand.next() % individual->getNumFactories();
             int factory2Id = rand.next() % individual->getNumFactories();
             Factory *factory1 = individual->getFactory(factory1Id);
@@ -849,25 +728,18 @@ vector<Individual *> makeNewPop(vector<Individual *> parents, int seed, int n)
 
             int choice = rand.next() % prob.size();
             // choice = 1;
-            if (choice == 1)
-            {
+            if (choice == 1) {
                 individual->swap(factory1Id, factory2Id, factory1->getJob(job1), factory2->getJob(job2));
                 // factory1->speedUp();
                 // factory1->speedDown();
                 // factory2->speedUp();
                 // factory1->speedDown();
-            }
-            else
-            {
-                if (factory1->getNumJobs() - 1 > 0)
-                {
+            } else {
+                if (factory1->getNumJobs() - 1 > 0) {
                     individual->insert(factory1Id, factory2Id, factory1->getJob(job1), job2);
-                }
-                else if (factory2->getNumJobs() - 1 > 0)
-                {
+                } else if (factory2->getNumJobs() - 1 > 0) {
                     individual->insert(factory2Id, factory1Id, factory2->getJob(job2), job1);
-                }
-                else
+                } else
                     individual->swap(factory1Id, factory2Id, factory1->getJob(job1), factory2->getJob(job2));
             }
             // factory1->initializeJobsStartTimes();
@@ -880,20 +752,17 @@ vector<Individual *> makeNewPop(vector<Individual *> parents, int seed, int n)
     return children;
 }
 
-vector<Individual *> makeNewPopV2(vector<Individual *> parents, int seed, int n)
-{
+vector<Individual *> makeNewPopV2(vector<Individual *> parents, int seed, int n) {
     vector<Individual *> children;
     Xoshiro256plus rand(seed);
 
     vector<int> prob{1, 1, 1, 1, 0, 0, 0, 0, 0, 0}; // 1 chance of swap 0 chance of insertion
 
-    for (int i = 0; i < parents.size(); i++)
-    {
+    for (int i = 0; i < parents.size(); i++) {
 
         Individual *individual = new Individual(parents[i]);
 
-        for (int j = 0; j < n / 4; j++)
-        {
+        for (int j = 0; j < n / 4; j++) {
             int factory1Id = rand.next() % individual->getNumFactories();
             int factory2Id = rand.next() % individual->getNumFactories();
             Factory *factory1 = individual->getFactory(factory1Id);
@@ -903,25 +772,18 @@ vector<Individual *> makeNewPopV2(vector<Individual *> parents, int seed, int n)
 
             int choice = rand.next() % prob.size();
             choice = 1;
-            if (choice == 1)
-            {
+            if (choice == 1) {
                 individual->swap(factory1Id, factory2Id, factory1->getJob(job1), factory2->getJob(job2));
                 factory1->speedUp();
                 factory1->speedDown();
                 factory2->speedUp();
                 factory1->speedDown();
-            }
-            else
-            {
-                if (factory1->getNumJobs() - 1 > 0)
-                {
+            } else {
+                if (factory1->getNumJobs() - 1 > 0) {
                     individual->insert(factory1Id, factory2Id, factory1->getJob(job1), job2);
-                }
-                else if (factory2->getNumJobs() - 1 > 0)
-                {
+                } else if (factory2->getNumJobs() - 1 > 0) {
                     individual->insert(factory2Id, factory1Id, factory2->getJob(job2), job1);
-                }
-                else
+                } else
                     individual->swap(factory1Id, factory2Id, factory1->getJob(job1), factory2->getJob(job2));
             }
             // factory1->initializeJobsStartTimes();
@@ -934,20 +796,17 @@ vector<Individual *> makeNewPopV2(vector<Individual *> parents, int seed, int n)
     return children;
 }
 
-vector<Individual *> makeNewPopV3(vector<Individual *> parents, int seed, int n)
-{
+vector<Individual *> makeNewPopV3(vector<Individual *> parents, int seed, int n) {
     vector<Individual *> children;
     Xoshiro256plus rand(seed);
 
     vector<int> prob{1, 1, 1, 1, 0, 0, 0, 0, 0, 0}; // 1 chance of swap 0 chance of insertion
 
-    for (int i = 0; i < parents.size(); i++)
-    {
+    for (int i = 0; i < parents.size(); i++) {
 
         Individual *individual = new Individual(parents[i]);
 
-        for (int j = 0; j < n / 4; j++)
-        {
+        for (int j = 0; j < n / 4; j++) {
             int factory1Id = rand.next() % individual->getNumFactories();
             int factory2Id = rand.next() % individual->getNumFactories();
             Factory *factory1 = individual->getFactory(factory1Id);
@@ -958,13 +817,10 @@ vector<Individual *> makeNewPopV3(vector<Individual *> parents, int seed, int n)
             int choice = rand.next() % prob.size();
             individual->swap(factory1Id, factory2Id, factory1->getJob(job1), factory2->getJob(job2));
 
-            if (prob[choice] == 1)
-            {
+            if (prob[choice] == 1) {
                 factory1->speedUp();
                 factory2->speedUp();
-            }
-            else
-            {
+            } else {
                 factory1->speedDown();
                 factory2->speedDown();
             }
@@ -982,40 +838,34 @@ vector<Individual *> makeNewPopV3(vector<Individual *> parents, int seed, int n)
  * is determined by the crossover_rate and mutation_rate respectively.
  */
 
-int roulette(vector<vector<Individual *>> fronts, int seed)
-{
+int roulette(vector<vector<Individual *>> fronts, int seed) {
     // Calculate arithmetic progression of the fronts
     int sumWeights = 0;
-    for (int j = 0; j < fronts.size(); j++)
-    {
+    for (int j = 0; j < fronts.size(); j++) {
         sumWeights += j + 1;
     }
 
     // Calculate probabilities of each front
     float sumProbabilities = 0.0;
     vector<float> probabilities;
-    for (int j = fronts.size(); j > 0; j--)
-    {
+    for (int j = fronts.size(); j > 0; j--) {
         float probability = j / sumWeights;
         probabilities.push_back(probability);
         sumProbabilities += probability;
     }
 
     // Normalize probabilities
-    for (int j = 0; j < probabilities.size(); j++)
-    {
+    for (int j = 0; j < probabilities.size(); j++) {
         probabilities[j] /= sumProbabilities;
     }
 
     // Choose a front
-    float random = ((double)rand()) / RAND_MAX;
+    float random = ((double) rand()) / RAND_MAX;
     float sum = 0.0;
     int frontIndex = 0;
-    for (int j = 0; j < probabilities.size(); j++)
-    {
+    for (int j = 0; j < probabilities.size(); j++) {
         sum += probabilities[j];
-        if (random < sum)
-        {
+        if (random < sum) {
             frontIndex = j;
             break;
         }
@@ -1024,20 +874,17 @@ int roulette(vector<vector<Individual *>> fronts, int seed)
     return frontIndex;
 }
 
-vector<Individual *> NSGAII::makeChildren(int seed)
-{
+vector<Individual *> NSGAII::makeChildren(int seed) {
     srand(seed);
 
     vector<Individual *> children;
 
     // Crossover
-    for (int i = 0; i < this->population.size(); i++)
-    {
-        float probability = (float)rand() / (float)RAND_MAX;
+    for (int i = 0; i < this->population.size(); i++) {
+        float probability = (float) rand() / (float) RAND_MAX;
 
         // If probability is less than crossover rate, then crossover
-        if (probability < this->crossoverRate)
-        {
+        if (probability < this->crossoverRate) {
             // One parent is the current parent
             int parent1 = i;
 
@@ -1064,13 +911,11 @@ vector<Individual *> NSGAII::makeChildren(int seed)
     }
 
     // Mutation
-    for (int i = 0; i < this->population.size(); i++)
-    {
-        float probability = (float)rand() / (float)RAND_MAX;
+    for (int i = 0; i < this->population.size(); i++) {
+        float probability = (float) rand() / (float) RAND_MAX;
 
         // If probability is less than mutation rate, then mutate
-        if (probability < this->mutationRate)
-        {
+        if (probability < this->mutationRate) {
             // TODO: é preciso lembrar se o INGM está mesmo funcionando
             // children.push_back(this->INGM(this->population[i], seed));
             // Eu acredito que poderíamos deixar o híbrido ao invés de só INGM
@@ -1085,8 +930,7 @@ vector<Individual *> NSGAII::makeChildren(int seed)
 }
 
 // Criei esse método só para não ter que apagar o NSGA2NextGen. Porém, eles são basicamente iguais. Só muda o makeNewPop que aqui é makeChildren
-void NSGAII::NSGA2NextGeneration(int seed)
-{
+void NSGAII::NSGA2NextGeneration(int seed) {
     Xoshiro256plus rand(seed);
 
     // Parents and next generation
@@ -1094,7 +938,7 @@ void NSGAII::NSGA2NextGeneration(int seed)
     vector<Individual *> nextGen;
 
     // Recombine and mutate parents into this vector
-    vector<Individual *> children = this->makeChildren(seed);
+    vector<Individual *> children = this->makenewpop_operators_ND(parents, seed);
 
     // join parents and children into this vector
     vector<Individual *> all = parents;
@@ -1110,19 +954,16 @@ void NSGAII::NSGA2NextGeneration(int seed)
 
     // insere enquanto o numero de elementos inseridos for menor q n
     int l = 0;
-    for (int i = 0; inserted < n && i < fronts.size() - 1; i++)
-    {
+    for (int i = 0; inserted < n && i < fronts.size() - 1; i++) {
         // nextGen.reserve(nextGen.size() + fronts[i].size());
         ::assignCrowdingDistance(fronts[i]);
 
-        if (inserted + fronts[i].size() > n)
-        {
+        if (inserted + fronts[i].size() > n) {
             l = i;
             break;
         }
 
-        for (int j = 0; j < fronts[i].size(); j++)
-        {
+        for (int j = 0; j < fronts[i].size(); j++) {
             nextGen.push_back(fronts[i][j]);
             inserted++;
         }
@@ -1133,12 +974,10 @@ void NSGAII::NSGA2NextGeneration(int seed)
         nextGen.reserve(fronts[l].size());
         nextGen.insert(nextGen.end(), fronts[l].begin(), fronts[l].end());
     }*/
-    if (nextGen.size() < n)
-    {
+    if (nextGen.size() < n) {
         // nextGen.reserve(n);
         sort(fronts[l].begin(), fronts[l].end(), crowdedCompare);
-        for (int i = 0; nextGen.size() < n; i++)
-        {
+        for (int i = 0; nextGen.size() < n; i++) {
             nextGen.push_back(fronts[l][i]);
         }
     }
@@ -1146,8 +985,7 @@ void NSGAII::NSGA2NextGeneration(int seed)
     this->population = nextGen;
 }
 
-void NSGAII::NSGA2NextGen(int seed)
-{
+void NSGAII::NSGA2NextGen(int seed) {
     Xoshiro256plus rand(seed);
 
     // Select parents
@@ -1171,19 +1009,16 @@ void NSGAII::NSGA2NextGen(int seed)
 
     // insere enquanto o numero de elementos inseridos for menor q n
     int l = 0;
-    for (int i = 0; inserted < n && i < fronts.size() - 1; i++)
-    {
+    for (int i = 0; inserted < n && i < fronts.size() - 1; i++) {
         // nextGen.reserve(nextGen.size() + fronts[i].size());
         ::assignCrowdingDistance(fronts[i]);
 
-        if (inserted + fronts[i].size() > n)
-        {
+        if (inserted + fronts[i].size() > n) {
             l = i;
             break;
         }
 
-        for (int j = 0; j < fronts[i].size(); j++)
-        {
+        for (int j = 0; j < fronts[i].size(); j++) {
             nextGen.push_back(fronts[i][j]);
             inserted++;
         }
@@ -1194,12 +1029,10 @@ void NSGAII::NSGA2NextGen(int seed)
         nextGen.reserve(fronts[l].size());
         nextGen.insert(nextGen.end(), fronts[l].begin(), fronts[l].end());
     }*/
-    if (nextGen.size() < n)
-    {
+    if (nextGen.size() < n) {
         // nextGen.reserve(n);
         sort(fronts[l].begin(), fronts[l].end(), crowdedCompare);
-        for (int i = 0; nextGen.size() < n; i++)
-        {
+        for (int i = 0; nextGen.size() < n; i++) {
             nextGen.push_back(fronts[l][i]);
         }
     }
@@ -1207,8 +1040,7 @@ void NSGAII::NSGA2NextGen(int seed)
     this->population = nextGen;
 }
 
-void NSGAII::NSGA2NextGen_operators(int seed)
-{
+void NSGAII::NSGA2NextGen_operators(int seed) {
     vector<Individual *> parents = this->population;
     vector<Individual *> nextGen;
 
@@ -1229,19 +1061,16 @@ void NSGAII::NSGA2NextGen_operators(int seed)
 
     // insere enquanto o numero de elementos inseridos for menor q n
     int l = 0;
-    for (int i = 0; inserted < n && i < fronts.size() - 1; i++)
-    {
+    for (int i = 0; inserted < n && i < fronts.size() - 1; i++) {
         // nextGen.reserve(nextGen.size() + fronts[i].size());
         ::assignCrowdingDistance(fronts[i]);
 
-        if (inserted + fronts[i].size() > n)
-        {
+        if (inserted + fronts[i].size() > n) {
             l = i;
             break;
         }
 
-        for (int j = 0; j < fronts[i].size(); j++)
-        {
+        for (int j = 0; j < fronts[i].size(); j++) {
             nextGen.push_back(fronts[i][j]);
             inserted++;
         }
@@ -1252,12 +1081,10 @@ void NSGAII::NSGA2NextGen_operators(int seed)
         nextGen.reserve(fronts[l].size());
         nextGen.insert(nextGen.end(), fronts[l].begin(), fronts[l].end());
     }*/
-    if (nextGen.size() < n)
-    {
+    if (nextGen.size() < n) {
         // nextGen.reserve(n);
         sort(fronts[l].begin(), fronts[l].end(), crowdedCompare);
-        for (int i = 0; nextGen.size() < n; i++)
-        {
+        for (int i = 0; nextGen.size() < n; i++) {
             nextGen.push_back(fronts[l][i]);
         }
     }
@@ -1265,8 +1092,7 @@ void NSGAII::NSGA2NextGen_operators(int seed)
     this->population = nextGen;
 }
 
-void NSGAII::NSGA2NextGen_operators_ND(int seed)
-{
+void NSGAII::NSGA2NextGen_operators_ND(int seed) {
     vector<Individual *> parents = this->population;
     vector<Individual *> nextGen;
 
@@ -1287,19 +1113,16 @@ void NSGAII::NSGA2NextGen_operators_ND(int seed)
 
     // insere enquanto o numero de elementos inseridos for menor q n
     int l = 0;
-    for (int i = 0; inserted < n && i < fronts.size() - 1; i++)
-    {
+    for (int i = 0; inserted < n && i < fronts.size() - 1; i++) {
         // nextGen.reserve(nextGen.size() + fronts[i].size());
         ::assignCrowdingDistance(fronts[i]);
 
-        if (inserted + fronts[i].size() > n)
-        {
+        if (inserted + fronts[i].size() > n) {
             l = i;
             break;
         }
 
-        for (int j = 0; j < fronts[i].size(); j++)
-        {
+        for (int j = 0; j < fronts[i].size(); j++) {
             nextGen.push_back(fronts[i][j]);
             inserted++;
         }
@@ -1310,12 +1133,10 @@ void NSGAII::NSGA2NextGen_operators_ND(int seed)
         nextGen.reserve(fronts[l].size());
         nextGen.insert(nextGen.end(), fronts[l].begin(), fronts[l].end());
     }*/
-    if (nextGen.size() < n)
-    {
+    if (nextGen.size() < n) {
         // nextGen.reserve(n);
         sort(fronts[l].begin(), fronts[l].end(), crowdedCompare);
-        for (int i = 0; nextGen.size() < n; i++)
-        {
+        for (int i = 0; nextGen.size() < n; i++) {
             nextGen.push_back(fronts[l][i]);
         }
     }
@@ -1325,8 +1146,7 @@ void NSGAII::NSGA2NextGen_operators_ND(int seed)
 
 void normalize(vector<Individual *> individuals,
                vector<tuple<float, float, int, int>> &refPoints,
-               vector<tuple<float, float, Individual *>> &normalizedIndividuals)
-{
+               vector<tuple<float, float, Individual *>> &normalizedIndividuals) {
     int numPoints = 10;
     refPoints.reserve(numPoints);
     // TFT, TEC, Niche Count, id
@@ -1343,8 +1163,7 @@ void normalize(vector<Individual *> individuals,
     float maxTFT = Util::maxTFTSol(individuals)->getTFT();
     float maxTEC = Util::maxTECSol(individuals)->getTEC();
 
-    for (int i = 0; i < individuals.size(); i++)
-    {
+    for (int i = 0; i < individuals.size(); i++) {
         float nTFT = (individuals[i]->getTFT() - minTFT) / (maxTFT - minTFT);
         float nTEC = (individuals[i]->getTEC() - minTEC) / (maxTEC - minTEC);
         tuple<float, float, Individual *> ns = make_tuple(nTFT, nTEC, individuals[i]);
@@ -1354,10 +1173,9 @@ void normalize(vector<Individual *> individuals,
         // TECs[i] = (individuals[i]->getTEC() - minTEC) / maxTEC;
     }
 
-    for (int i = 0; i < numPoints; i++)
-    {
-        float x = ((float)1 / (float)numPoints) * (float)i;
-        float y = 1 - ((float)1 / (float)numPoints) * (float)i;
+    for (int i = 0; i < numPoints; i++) {
+        float x = ((float) 1 / (float) numPoints) * (float) i;
+        float y = 1 - ((float) 1 / (float) numPoints) * (float) i;
         tuple<float, float, int, int> ref = make_tuple(x, y, 0, 0);
         refPoints.push_back(ref);
         // refPointTECs.push_back((1 / numPoints) * i);
@@ -1367,20 +1185,17 @@ void normalize(vector<Individual *> individuals,
 
 void associate(vector<tuple<float, float, int, int>> &refPoints,
                vector<tuple<float, float, Individual *>> &normSol,
-               vector<tuple<Individual *, float, int>> &assocVec)
-{
+               vector<tuple<Individual *, float, int>> &assocVec) {
 
     int numIndividuals = normSol.size();
     int numRefPoints = refPoints.size();
 
     vector<int> associationVector(numIndividuals, 0);
-    for (int i = 0; i < numIndividuals; i++)
-    {
+    for (int i = 0; i < numIndividuals; i++) {
         float minDistance = INFINITY;
         int refPointPos;
 
-        for (int j = 0; j < numRefPoints; j++)
-        {
+        for (int j = 0; j < numRefPoints; j++) {
             // compute distance of individual from each line
             float a = get<1>(refPoints[j]);
             float b = -get<0>(refPoints[j]);
@@ -1390,8 +1205,7 @@ void associate(vector<tuple<float, float, int, int>> &refPoints,
             float by0 = b * y0;
             float distance = fabsf(ax0 + by0) / sqrtf(powf(a, 2) + powf(b, 2));
 
-            if (distance < minDistance)
-            {
+            if (distance < minDistance) {
                 minDistance = distance;
                 refPointPos = j;
             }
@@ -1406,26 +1220,21 @@ void associate(vector<tuple<float, float, int, int>> &refPoints,
     }
 }
 
-bool nicheCompare(vector<tuple<Individual *, float>> &a, vector<tuple<Individual *, float>> &b)
-{
+bool nicheCompare(vector<tuple<Individual *, float>> &a, vector<tuple<Individual *, float>> &b) {
     return a.size() < b.size();
 }
 
-bool distanceCompare(tuple<Individual *, float> &a, tuple<Individual *, float> &b)
-{
+bool distanceCompare(tuple<Individual *, float> &a, tuple<Individual *, float> &b) {
     return get<0>(a) < get<0>(b);
 }
 
-vector<tuple<Individual *, float>> getIntersection(vector<Individual *> &individualV, vector<tuple<Individual *, float>> &niche)
-{
+vector<tuple<Individual *, float>>
+getIntersection(vector<Individual *> &individualV, vector<tuple<Individual *, float>> &niche) {
     vector<tuple<Individual *, float>> intersection;
 
-    for (Individual *s : individualV)
-    {
-        for (tuple<Individual *, float> n : niche)
-        {
-            if (s == get<0>(n))
-            {
+    for (Individual *s: individualV) {
+        for (tuple<Individual *, float> n: niche) {
+            if (s == get<0>(n)) {
                 intersection.push_back(n);
             }
         }
@@ -1434,15 +1243,12 @@ vector<tuple<Individual *, float>> getIntersection(vector<Individual *> &individ
     return intersection;
 }
 
-int minDistanceIndex(vector<tuple<Individual *, float>> v)
-{
+int minDistanceIndex(vector<tuple<Individual *, float>> v) {
 
     float minDistance = INFINITY;
     int minDistancePos = 0;
-    for (tuple<Individual *, float> t : v)
-    {
-        if (get<1>(t) < minDistance)
-        {
+    for (tuple<Individual *, float> t: v) {
+        if (get<1>(t) < minDistance) {
             minDistance = get<1>(t);
         }
     }
@@ -1450,38 +1256,30 @@ int minDistanceIndex(vector<tuple<Individual *, float>> v)
     return minDistancePos;
 }
 
-vector<int> getLeastNicheCountPoints(vector<tuple<float, float, int, int>> &refPoints)
-{
+vector<int> getLeastNicheCountPoints(vector<tuple<float, float, int, int>> &refPoints) {
     vector<int> leastNicheCountPoints;
     int leastNicheCount = std::numeric_limits<int>::max();
-    for (tuple<float, float, int, int> p : refPoints)
-    {
-        if (get<2>(p) < leastNicheCount && get<3>(p) != -1)
-        {
+    for (tuple<float, float, int, int> p: refPoints) {
+        if (get<2>(p) < leastNicheCount && get<3>(p) != -1) {
             leastNicheCount = get<2>(p);
         }
     }
 
-    for (int i = 0; i < refPoints.size(); i++)
-    {
-        if (get<2>(refPoints[i]) == leastNicheCount && get<3>(refPoints[i]) != -1)
-        {
+    for (int i = 0; i < refPoints.size(); i++) {
+        if (get<2>(refPoints[i]) == leastNicheCount && get<3>(refPoints[i]) != -1) {
             leastNicheCountPoints.push_back(i);
         }
     }
     return leastNicheCountPoints;
 }
 
-int minDistancePointIndex(vector<tuple<Individual *, float, int>> &assoc)
-{
+int minDistancePointIndex(vector<tuple<Individual *, float, int>> &assoc) {
     float minDistance = INFINITY;
     int minDistancePoint;
 
-    for (int i = 0; i < assoc.size(); i++)
-    {
+    for (int i = 0; i < assoc.size(); i++) {
         tuple<Individual *, float, int> p = assoc[i];
-        if (get<1>(p) < minDistance)
-        {
+        if (get<1>(p) < minDistance) {
             minDistance = get<1>(p);
             minDistancePoint = i;
         }
@@ -1493,15 +1291,13 @@ int minDistancePointIndex(vector<tuple<Individual *, float, int>> &assoc)
 void niching(int K, int seed, vector<tuple<float, float, int, int>> &refPoints,
              vector<tuple<Individual *, float, int>> &assoc,
              vector<Individual *> &lastFront,
-             vector<Individual *> &selected)
-{
+             vector<Individual *> &selected) {
 
     // vector<Individual *> selected(K);
     Xoshiro256plus rand(seed);
 
     int k = 0;
-    while (k < K)
-    {
+    while (k < K) {
         // conjunto J = indices dos pontos com menor niche count
         vector<int> J = getLeastNicheCountPoints(refPoints);
         // escolhe elemento j aleatório em J
@@ -1509,14 +1305,10 @@ void niching(int K, int seed, vector<tuple<float, float, int, int>> &refPoints,
 
         // conjunto I = elementos de Fl que estão associados a j
         vector<tuple<Individual *, float, int>> I;
-        for (tuple<Individual *, float, int> el : assoc)
-        {
-            if (get<2>(el) == j)
-            {
-                for (Individual *s : lastFront)
-                {
-                    if (get<0>(el) == s)
-                    {
+        for (tuple<Individual *, float, int> el: assoc) {
+            if (get<2>(el) == j) {
+                for (Individual *s: lastFront) {
+                    if (get<0>(el) == s) {
                         I.push_back(el);
                     }
                 }
@@ -1524,17 +1316,13 @@ void niching(int K, int seed, vector<tuple<float, float, int, int>> &refPoints,
         }
 
         // se I não está vazio
-        if (!I.empty())
-        {
+        if (!I.empty()) {
             Individual *s;
             int pos;
-            if (get<2>(refPoints[j]) == 0)
-            {
+            if (get<2>(refPoints[j]) == 0) {
                 // seleciona elemento de I com o menor distância ao ponto de referência
                 pos = minDistancePointIndex(I);
-            }
-            else
-            {
+            } else {
                 // seleciona elemento aleatório de I
                 pos = rand.next() % I.size();
             }
@@ -1546,28 +1334,22 @@ void niching(int K, int seed, vector<tuple<float, float, int, int>> &refPoints,
             // std::remove(lastFront.begin(), lastFront.end(), s);
             lastFront.erase(std::remove(lastFront.begin(), lastFront.end(), s), lastFront.end());
             k++;
-        }
-
-        else
-        {
+        } else {
             get<3>(refPoints[j]) = -1;
             // refPoints.erase(refPoints.begin()+j);
         }
     }
 }
 
-int NSGAII::nMetric()
-{
+int NSGAII::nMetric() {
     return this->dominationFronts[0].size();
 }
 
-vector<Individual *> NSGAII::getParetoFront()
-{
+vector<Individual *> NSGAII::getParetoFront() {
     return this->dominationFronts[0];
 }
 
-Individual *NSGAII::INGM(Individual *individual, int seed)
-{
+Individual *NSGAII::INGM(Individual *individual, int seed) {
     Xoshiro256plus rand(seed);
     Individual *newIndividual = new Individual(individual);
 
@@ -1580,23 +1362,18 @@ Individual *NSGAII::INGM(Individual *individual, int seed)
 
     if (randomObjective == 0) // Optimize TFT
     {
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             float fTFT = newIndividual->getFactory(f)->getTFT();
-            if (fTFT > largestFactory)
-            {
+            if (fTFT > largestFactory) {
                 largestFactory = fTFT;
                 largestFactoryIndex = f;
             }
         }
-    }
-    else // Optimize TEC
+    } else // Optimize TEC
     {
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             float fTEC = newIndividual->getFactory(f)->getTEC();
-            if (fTEC > largestFactory)
-            {
+            if (fTEC > largestFactory) {
                 largestFactory = fTEC;
                 largestFactoryIndex = f;
             }
@@ -1606,8 +1383,7 @@ Individual *NSGAII::INGM(Individual *individual, int seed)
     vector<Job *> jobsToTry = newIndividual->getFactory(largestFactoryIndex)->getJobs();
     int largestFactoryFactoryTotalJobs = newIndividual->getFactory(largestFactoryIndex)->getNumJobs();
 
-    while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2)
-    {
+    while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2) {
         // Get a random job and extract from the factory
         int randomJobIndex = rand.next() % jobsToTry.size();
         Job *job = jobsToTry[randomJobIndex];
@@ -1618,8 +1394,7 @@ Individual *NSGAII::INGM(Individual *individual, int seed)
         {
             newIndividual->getFactory(largestFactoryIndex)->randSpeedUp(seed);
             newIndividual->getFactory(largestFactoryIndex)->speedUp();
-        }
-        else // Optimize TEC
+        } else // Optimize TEC
         {
             newIndividual->getFactory(largestFactoryIndex)->randSpeedDown(seed);
             newIndividual->getFactory(largestFactoryIndex)->speedDown();
@@ -1627,11 +1402,9 @@ Individual *NSGAII::INGM(Individual *individual, int seed)
         }
 
         // Try inserting the job to every position of every factory until the individual dominates the original one
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             int factoryNumJobs = newIndividual->getFactory(f)->getNumJobs();
-            for (int pos = 0; pos < factoryNumJobs; pos++)
-            {
+            for (int pos = 0; pos < factoryNumJobs; pos++) {
                 // Insert the job to the factory
                 newIndividual->insert(largestFactoryIndex, f, job, pos);
 
@@ -1640,8 +1413,7 @@ Individual *NSGAII::INGM(Individual *individual, int seed)
                 {
                     newIndividual->getFactory(f)->randSpeedUp(seed);
                     newIndividual->getFactory(f)->speedUp();
-                }
-                else // Optimize TEC
+                } else // Optimize TEC
                 {
                     newIndividual->getFactory(f)->randSpeedDown(seed);
                     newIndividual->getFactory(f)->speedDown();
@@ -1651,10 +1423,8 @@ Individual *NSGAII::INGM(Individual *individual, int seed)
                     newIndividual->getTEC() < individual->getTEC()) // If newIndividual dominates individual
                 {
                     return newIndividual;
-                }
-                else if (newIndividual->getTFT() < individual->getTFT() ||
-                         newIndividual->getTEC() < individual->getTEC())
-                {
+                } else if (newIndividual->getTFT() < individual->getTFT() ||
+                           newIndividual->getTEC() < individual->getTEC()) {
 
                     this->updateArchive(newIndividual);
                 }
@@ -1666,8 +1436,7 @@ Individual *NSGAII::INGM(Individual *individual, int seed)
 }
 
 // Second version of INGM with some changes (Guilherme - 03/07)
-Individual *NSGAII::INGM_V2(Individual *individual, int seed)
-{
+Individual *NSGAII::INGM_V2(Individual *individual, int seed) {
     Xoshiro256plus rand(seed);
 
     // Randomly choose the objective for optimization
@@ -1679,23 +1448,18 @@ Individual *NSGAII::INGM_V2(Individual *individual, int seed)
 
     if (randomObjective == 0) // Optimize TFT
     {
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             float fTFT = individual->getFactory(f)->getTFT();
-            if (fTFT > largestFactory)
-            {
+            if (fTFT > largestFactory) {
                 largestFactory = fTFT;
                 largestFactoryIndex = f;
             }
         }
-    }
-    else // Optimize TEC
+    } else // Optimize TEC
     {
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             float fTEC = individual->getFactory(f)->getTEC();
-            if (fTEC > largestFactory)
-            {
+            if (fTEC > largestFactory) {
                 largestFactory = fTEC;
                 largestFactoryIndex = f;
             }
@@ -1705,19 +1469,16 @@ Individual *NSGAII::INGM_V2(Individual *individual, int seed)
     vector<Job *> jobsToTry = individual->getFactory(largestFactoryIndex)->getJobs();
     int largestFactoryFactoryTotalJobs = individual->getFactory(largestFactoryIndex)->getNumJobs();
 
-    while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2)
-    {
+    while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2) {
         // Get a random job and extract from the factory
         int randomJobIndex = rand.next() % jobsToTry.size();
         Job *job = jobsToTry[randomJobIndex];
         jobsToTry.erase(jobsToTry.begin() + randomJobIndex);
 
         // Try inserting the job to every position of every factory until the individual dominates the original one
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             int factoryNumJobs = individual->getFactory(f)->getNumJobs();
-            for (int pos = 0; pos < factoryNumJobs; pos++)
-            {
+            for (int pos = 0; pos < factoryNumJobs; pos++) {
                 Individual *auxNewIndividual = new Individual(individual);
 
                 // Insert the job to the factory
@@ -1733,8 +1494,7 @@ Individual *NSGAII::INGM_V2(Individual *individual, int seed)
                     // Change the destination factory
                     auxNewIndividual->getFactory(f)->randSpeedUp(seed);
                     auxNewIndividual->getFactory(f)->speedUp();
-                }
-                else // Optimize TEC
+                } else // Optimize TEC
                 {
                     // Change the origin factory
                     auxNewIndividual->getFactory(largestFactoryIndex)->randSpeedDown(seed);
@@ -1750,27 +1510,24 @@ Individual *NSGAII::INGM_V2(Individual *individual, int seed)
                 // Compare the new individual with the original one
                 // If auxNewIndividual dominates individual
                 if (auxNewIndividual->getTFT() < individual->getTFT() &&
-                    auxNewIndividual->getTEC() < individual->getTEC())
-                {
+                    auxNewIndividual->getTEC() < individual->getTEC()) {
                     return auxNewIndividual;
                 }
 
-                // If auxNewIndividual doesn't dominate the parent individual, then update the archive
-                else
-                {
+                    // If auxNewIndividual doesn't dominate the parent individual, then update the archive
+                else {
                     this->updateArchive(auxNewIndividual);
                 }
 
                 // Delete the auxNewIndividual
-                delete auxNewIndividual;
+                //delete auxNewIndividual;
             }
         }
     }
     return individual;
 }
 
-Individual *NSGAII::SNGM(Individual *individual, int seed)
-{
+Individual *NSGAII::SNGM(Individual *individual, int seed) {
     Xoshiro256plus rand(seed);
     Individual *newIndividual = new Individual(individual);
 
@@ -1783,23 +1540,18 @@ Individual *NSGAII::SNGM(Individual *individual, int seed)
 
     if (randomObjective == 0) // Optimize TFT
     {
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             float fTFT = newIndividual->getFactory(f)->getTFT();
-            if (fTFT > largestFactory)
-            {
+            if (fTFT > largestFactory) {
                 largestFactory = fTFT;
                 largestFactoryIndex = f;
             }
         }
-    }
-    else // Optimize TEC
+    } else // Optimize TEC
     {
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             float fTEC = newIndividual->getFactory(f)->getTEC();
-            if (fTEC > largestFactory)
-            {
+            if (fTEC > largestFactory) {
                 largestFactory = fTEC;
                 largestFactoryIndex = f;
             }
@@ -1808,32 +1560,26 @@ Individual *NSGAII::SNGM(Individual *individual, int seed)
 
     vector<Job *> jobsToTry = newIndividual->getFactory(largestFactoryIndex)->getJobs();
     int largestFactoryFactoryTotalJobs = newIndividual->getFactory(largestFactoryIndex)->getNumJobs();
-    while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2)
-    {
+    while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2) {
         // Get a random job
         int randomJobIndex = rand.next() % jobsToTry.size();
         Job *job = jobsToTry[randomJobIndex];
         jobsToTry.erase(jobsToTry.begin() + randomJobIndex);
 
         // Try inserting the job to every position of every factory until the individual dominates the original one
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             bool tag = false;
             int factoryNumJobs = newIndividual->getFactory(f)->getNumJobs();
-            for (int pos = 0; pos < factoryNumJobs; pos++)
-            {
+            for (int pos = 0; pos < factoryNumJobs; pos++) {
                 // Swap the job to the factory
                 Job *job2 = newIndividual->getFactory(f)->getJobs().at(pos);
                 while (job2->getId() == job->getId()) // get a different job to swap
                 {
                     // if all possibilities of positions on f have been tried
-                    if (pos + 1 == factoryNumJobs)
-                    {
+                    if (pos + 1 == factoryNumJobs) {
                         tag = true;
                         break;
-                    }
-                    else
-                    {
+                    } else {
                         pos++;
                         job2 = newIndividual->getFactory(f)->getJobs().at(pos);
                     }
@@ -1852,8 +1598,7 @@ Individual *NSGAII::SNGM(Individual *individual, int seed)
 
                     newIndividual->getFactory(f)->randSpeedUp(seed);
                     newIndividual->getFactory(f)->speedUp();
-                }
-                else // Optimize TEC
+                } else // Optimize TEC
                 {
                     newIndividual->getFactory(largestFactoryIndex)->randSpeedDown(seed);
                     newIndividual->getFactory(largestFactoryIndex)->speedDown();
@@ -1867,10 +1612,8 @@ Individual *NSGAII::SNGM(Individual *individual, int seed)
                     newIndividual->getTEC() < individual->getTEC()) // If newIndividual dominates individual
                 {
                     return newIndividual;
-                }
-                else if (newIndividual->getTFT() < individual->getTFT() ||
-                         newIndividual->getTEC() < individual->getTEC())
-                {
+                } else if (newIndividual->getTFT() < individual->getTFT() ||
+                           newIndividual->getTEC() < individual->getTEC()) {
 
                     // this->updateArchive(newIndividual);
                 }
@@ -1881,8 +1624,7 @@ Individual *NSGAII::SNGM(Individual *individual, int seed)
     return nullptr;
 }
 
-Individual *NSGAII::HNGM(Individual *individual, int seed)
-{
+Individual *NSGAII::HNGM(Individual *individual, int seed) {
     Xoshiro256plus rand(time(NULL));
 
     // Randomly choose INGM or SNGM
@@ -1894,8 +1636,7 @@ Individual *NSGAII::HNGM(Individual *individual, int seed)
     return this->SNGM(individual, seed);
 }
 
-vector<Individual *> NSGAII::makenewpop_operators(vector<Individual *> parents, int seed)
-{
+vector<Individual *> NSGAII::makenewpop_operators(vector<Individual *> parents, int seed) {
     Xoshiro256plus rand(seed);
 
     // clear the newIndividuals vector
@@ -1907,26 +1648,19 @@ vector<Individual *> NSGAII::makenewpop_operators(vector<Individual *> parents, 
     // For each individual in parents, generate a neighbour
     int i = 0;
     int cont = 0;
-    while (i < parents.size())
-    {
+    while (i < parents.size()) {
         // Randomly choose which operator will be used to generate a neighbour
         int rand_op = rand.next() % 3; // 0 = INGM, 1 = SNGM, 2 = HNGM
 
-        if (rand_op == 0)
-        {
+        if (rand_op == 0) {
             individual_ptr = this->INGM(parents[i], rand.next() % 30000);
-        }
-        else if (rand_op == 1)
-        {
+        } else if (rand_op == 1) {
             individual_ptr = this->SNGM(parents[i], rand.next() % 30000);
-        }
-        else
-        {
+        } else {
             individual_ptr = this->HNGM(parents[i], rand.next() % 30000);
         }
         i++;
-        if (individual_ptr != nullptr)
-        {
+        if (individual_ptr != nullptr) {
             children.push_back(individual_ptr);
         }
 
@@ -1942,8 +1676,7 @@ vector<Individual *> NSGAII::makenewpop_operators(vector<Individual *> parents, 
 }
 
 // INGM Non-Dominated: can generates an individual dominated by the original one
-Individual *NSGAII::INGM_ND(Individual *individual, int seed)
-{
+Individual *NSGAII::INGM_ND(Individual *individual, int seed) {
     Xoshiro256plus rand(seed);
     Individual *newIndividual = new Individual(individual);
 
@@ -1956,23 +1689,18 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed)
 
     if (randomObjective == 0) // Optimize TFT
     {
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             float fTFT = newIndividual->getFactory(f)->getTFT();
-            if (fTFT > largestFactory)
-            {
+            if (fTFT > largestFactory) {
                 largestFactory = fTFT;
                 largestFactoryIndex = f;
             }
         }
-    }
-    else // Optimize TEC
+    } else // Optimize TEC
     {
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             float fTEC = newIndividual->getFactory(f)->getTEC();
-            if (fTEC > largestFactory)
-            {
+            if (fTEC > largestFactory) {
                 largestFactory = fTEC;
                 largestFactoryIndex = f;
             }
@@ -1982,8 +1710,7 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed)
     vector<Job *> jobsToTry = newIndividual->getFactory(largestFactoryIndex)->getJobs();
     int largestFactoryFactoryTotalJobs = newIndividual->getFactory(largestFactoryIndex)->getNumJobs();
 
-    while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2)
-    {
+    while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2) {
         // Get a random job and extract from the factory
         int randomJobIndex = rand.next() % jobsToTry.size();
         Job *job = jobsToTry[randomJobIndex];
@@ -1994,8 +1721,7 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed)
         {
             newIndividual->getFactory(largestFactoryIndex)->randSpeedUp(seed);
             newIndividual->getFactory(largestFactoryIndex)->speedUp();
-        }
-        else // Optimize TEC
+        } else // Optimize TEC
         {
             newIndividual->getFactory(largestFactoryIndex)->randSpeedDown(seed);
             newIndividual->getFactory(largestFactoryIndex)->speedDown();
@@ -2003,11 +1729,9 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed)
         }
 
         // Try inserting the job to every position of every factory until the individual dominates the original one
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             int factoryNumJobs = newIndividual->getFactory(f)->getNumJobs();
-            for (int pos = 0; pos < factoryNumJobs; pos++)
-            {
+            for (int pos = 0; pos < factoryNumJobs; pos++) {
                 // Insert the job to the factory
                 newIndividual->insert(largestFactoryIndex, f, job, pos);
 
@@ -2016,8 +1740,7 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed)
                 {
                     newIndividual->getFactory(f)->randSpeedUp(seed);
                     newIndividual->getFactory(f)->speedUp();
-                }
-                else // Optimize TEC
+                } else // Optimize TEC
                 {
                     newIndividual->getFactory(f)->randSpeedDown(seed);
                     newIndividual->getFactory(f)->speedDown();
@@ -2036,8 +1759,7 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed)
     return nullptr;
 }
 
-Individual *NSGAII::SNGM_ND(Individual *individual, int seed)
-{
+Individual *NSGAII::SNGM_ND(Individual *individual, int seed) {
     Xoshiro256plus rand(seed);
     Individual *newIndividual = new Individual(individual);
 
@@ -2050,23 +1772,18 @@ Individual *NSGAII::SNGM_ND(Individual *individual, int seed)
 
     if (randomObjective == 0) // Optimize TFT
     {
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             float fTFT = newIndividual->getFactory(f)->getTFT();
-            if (fTFT > largestFactory)
-            {
+            if (fTFT > largestFactory) {
                 largestFactory = fTFT;
                 largestFactoryIndex = f;
             }
         }
-    }
-    else // Optimize TEC
+    } else // Optimize TEC
     {
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             float fTEC = newIndividual->getFactory(f)->getTEC();
-            if (fTEC > largestFactory)
-            {
+            if (fTEC > largestFactory) {
                 largestFactory = fTEC;
                 largestFactoryIndex = f;
             }
@@ -2075,31 +1792,26 @@ Individual *NSGAII::SNGM_ND(Individual *individual, int seed)
 
     vector<Job *> jobsToTry = newIndividual->getFactory(largestFactoryIndex)->getJobs();
     int largestFactoryFactoryTotalJobs = newIndividual->getFactory(largestFactoryIndex)->getNumJobs();
-    while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2)
-    {
+    while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2) {
         // Get a random job
         int randomJobIndex = rand.next() % jobsToTry.size();
         Job *job = jobsToTry[randomJobIndex];
         jobsToTry.erase(jobsToTry.begin() + randomJobIndex);
 
         // Try inserting the job to every position of every factory until the individual dominates the original one
-        for (int f = 0; f < this->problem->getF(); f++)
-        {
+        for (int f = 0; f < this->problem->getF(); f++) {
             bool tag = false;
             int factoryNumJobs = newIndividual->getFactory(f)->getNumJobs();
-            for (int pos = 0; pos < factoryNumJobs; pos++)
-            {
+            for (int pos = 0; pos < factoryNumJobs; pos++) {
                 // Swap the job to the factory
                 Job *job2 = newIndividual->getFactory(f)->getJobs().at(pos);
                 while (job2->getId() == job->getId()) // get a different job to swap
                 {
                     // if all possibilities of positions on f have been tried
-                    if (pos + 1 == factoryNumJobs)
-                    {
+                    if (pos + 1 == factoryNumJobs) {
                         tag = true;
                         break;
-                    }
-                    else
+                    } else
                         job2 = newIndividual->getFactory(f)->getJobs().at(pos++);
                 }
                 // Needs to change factory
@@ -2116,8 +1828,7 @@ Individual *NSGAII::SNGM_ND(Individual *individual, int seed)
 
                     newIndividual->getFactory(f)->randSpeedUp(seed);
                     newIndividual->getFactory(f)->speedUp();
-                }
-                else // Optimize TEC
+                } else // Optimize TEC
                 {
                     newIndividual->getFactory(largestFactoryIndex)->randSpeedDown(seed);
                     newIndividual->getFactory(largestFactoryIndex)->speedDown();
@@ -2140,8 +1851,7 @@ Individual *NSGAII::SNGM_ND(Individual *individual, int seed)
     return nullptr;
 }
 
-Individual *NSGAII::HNGM_ND(Individual *individual, int seed)
-{
+Individual *NSGAII::HNGM_ND(Individual *individual, int seed) {
     Xoshiro256plus rand(time(NULL));
 
     // Randomly choose INGM or SNGM
@@ -2153,8 +1863,7 @@ Individual *NSGAII::HNGM_ND(Individual *individual, int seed)
     return this->SNGM_ND(individual, seed);
 }
 
-vector<Individual *> NSGAII::makenewpop_operators_ND(vector<Individual *> parents, int seed)
-{
+vector<Individual *> NSGAII::makenewpop_operators_ND(vector<Individual *> parents, int seed) {
     Xoshiro256plus rand(seed);
 
     // clear the newIndividuals vector
@@ -2166,34 +1875,26 @@ vector<Individual *> NSGAII::makenewpop_operators_ND(vector<Individual *> parent
     // For each individual in parents, generate a neighbour
     int i = 0;
     int cont = 0;
-    while (children.size() < parents.size())
-    {
+    while (children.size() < parents.size()) {
         // Randomly choose which operator will be used to generate a neighbour
         int rand_op = rand.next() % 3; // 0 = INGM, 1 = SNGM, 2 = HNGM
 
-        if (rand_op == 0)
-        {
+        if (rand_op == 0) {
             individual_ptr = this->INGM_ND(parents[i], rand.next() % 30000);
-        }
-        else if (rand_op == 1)
-        {
+        } else if (rand_op == 1) {
             individual_ptr = this->SNGM_ND(parents[i], rand.next() % 30000);
-        }
-        else
-        {
+        } else {
             individual_ptr = this->HNGM_ND(parents[i], rand.next() % 30000);
         }
         i++;
-        if (individual_ptr != nullptr)
-        {
+        if (individual_ptr != nullptr) {
             children.push_back(individual_ptr);
             cont = 0;
         }
         if (i == parents.size())
             i = 0;
 
-        if (cont == 10 * parents.size())
-        {
+        if (cont == 10 * parents.size()) {
             break;
         }
         cont++;
@@ -2315,46 +2016,58 @@ vector<Individual *> NSGAII::makenewpop_operators_ND(vector<Individual *> parent
 //     return csv;
 // }
 
-void NSGAII::run(int seed)
-{
+void NSGAII::run(int seed) {
     clock_t start, end;
 
     // Initialize the population PS = 30 individuals (26 random + 4 balanced)
-    for (int j = 0; j < 26; j++)
-    {
+    for (int j = 0; j < 26; j++) {
         this->population.push_back(this->totalRandomIndividualGenerator(j + seed));
     }
     this->population.push_back(this->randSMinTEC(seed));
     this->population.push_back(this->randSMinTFT(seed));
     this->population.push_back(this->minSMinTEC());
     this->population.push_back(this->maxSMinTFT());
+    this->fastNonDominatedSort();
 
     // Assign crowding distance to individuals to facilitate the selection process
     this->assignCrowdingDistance();
 
+    if (this->outputEnabled) {
+        Util::outputToFile("exp/"+to_string(seed) + "/after_0.csv", this->generatePopulationCSVString(), false);
+
+    }
+
+
     //
     int counter = 0;
-    while (true)
-    {
+    while (true) {
         end = clock();
         double time_taken = double(end - start) / double(CLOCKS_PER_SEC);
 
-        if (time_taken > this->problem->getN() / 2)
-        {
+        if (time_taken > this->problem->getN() / 2) {
             cout << "Time's up! " << counter << " iterations in " << time_taken << " seconds" << endl;
             break;
         }
 
-        this->NSGA2NextGeneration(counter + seed);
 
+        this->NSGA2NextGeneration(counter + seed);
         counter++;
+
+        if (this->outputEnabled) {
+            Util::outputToFile("exp/"+to_string(seed) + "/after_" + to_string(counter) + ".csv",
+                               this->generatePopulationCSVString(), false);
+        }
+
     }
 
     this->fastNonDominatedSort();
 
     // Add the pareto front to the archive
-    for (Individual *i : this->getParetoFront())
-    {
+    for (Individual *i: this->getParetoFront()) {
         this->updateArchive(i);
     }
+}
+
+void NSGAII::setOutputEnabled(bool outputEnabled) {
+    this->outputEnabled = outputEnabled;
 }

@@ -16,6 +16,7 @@ private:
 
     float crossoverRate;
     float mutationRate;
+    bool outputEnabled = false;
 
     struct timeval begin, end;
 
@@ -71,6 +72,8 @@ public:
     void run(int seed);
     vector<Individual *> makeChildren(int seed);
     void NSGA2NextGeneration(int seed);
+
+    void setOutputEnabled(bool outputEnabled);
 };
 
 #endif // NSGAII_HPP
