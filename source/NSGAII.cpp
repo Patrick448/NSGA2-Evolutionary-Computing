@@ -1625,7 +1625,7 @@ Individual *NSGAII::SNGM(Individual *individual, int seed) {
 }
 
 Individual *NSGAII::HNGM(Individual *individual, int seed) {
-    Xoshiro256plus rand(time(NULL));
+    Xoshiro256plus rand(seed/*time(NULL)*/);
 
     // Randomly choose INGM or SNGM
     int random_gen = rand.next() % 2; // 0 = INGM, 1 = SNGM
@@ -1852,7 +1852,7 @@ Individual *NSGAII::SNGM_ND(Individual *individual, int seed) {
 }
 
 Individual *NSGAII::HNGM_ND(Individual *individual, int seed) {
-    Xoshiro256plus rand(time(NULL));
+    Xoshiro256plus rand(seed/*time(NULL)*/);
 
     // Randomly choose INGM or SNGM
     int random_gen = rand.next() % 2; // 0 = INGM, 1 = SNGM
