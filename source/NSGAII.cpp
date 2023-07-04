@@ -880,7 +880,7 @@ vector<Individual *> NSGAII::makeChildren(int seed) {
     vector<Individual *> children;
 
     // Crossover
-    for (int i = 0; i < this->population.size(); i++) {
+    /* for (int i = 0; i < this->population.size(); i++) {
         float probability = (float) rand() / (float) RAND_MAX;
 
         // If probability is less than crossover rate, then crossover
@@ -908,23 +908,32 @@ vector<Individual *> NSGAII::makeChildren(int seed) {
             children.push_back(child1);
             children.push_back(child2);
         }
-    }
+    } */
 
     // Mutation
     for (int i = 0; i < this->population.size(); i++) {
-        float probability = (float) rand() / (float) RAND_MAX;
+        // float probability = (float) rand() / (float) RAND_MAX;
 
-        // If probability is less than mutation rate, then mutate
-        if (probability < this->mutationRate) {
-            // TODO: é preciso lembrar se o INGM está mesmo funcionando
-            // children.push_back(this->INGM(this->population[i], seed));
-            // Eu acredito que poderíamos deixar o híbrido ao invés de só INGM
+        // // If probability is less than mutation rate, then mutate
+        // if (probability < this->mutationRate) {
+        //     // TODO: é preciso lembrar se o INGM está mesmo funcionando
+        //     // children.push_back(this->INGM(this->population[i], seed));
+        //     // Eu acredito que poderíamos deixar o híbrido ao invés de só INGM
 
-            // Criei uma nova função INGM chamada INGM_V2 que é uma versão que acredito estar mais correta do que
-            // a implementação anterior e talvez não fique demorando tanto para achar uma solução que domine o pai
-            children.push_back(this->INGM_V2(this->population[i], seed));
+        //     // Criei uma nova função INGM chamada INGM_V2 que é uma versão que acredito estar mais correta do que
+        //     // a implementação anterior e talvez não fique demorando tanto para achar uma solução que domine o pai
+        //     Individual *child = this->INGM_V2(this->population[i], rand() % RAND_MAX);
+
+        //     if (child != nullptr) {
+        //         children.push_back(child);
+        //     }
+        // }
+        Individual *child = this->INGM_V2(this->population[i], rand() % RAND_MAX);
+        if (child != nullptr) {
+            children.push_back(child);
         }
     }
+    
 
     return children;
 }
@@ -938,13 +947,16 @@ void NSGAII::NSGA2NextGeneration(int seed) {
     vector<Individual *> nextGen;
 
     // Recombine and mutate parents into this vector
-    vector<Individual *> children = this->makenewpop_operators_ND(parents, seed);
+    vector<Individual *> children = this->makeChildren(seed);
 
     // join parents and children into this vector
     vector<Individual *> all = parents;
     all.reserve(this->population.size() + children.size());
     all.insert(all.end(), children.begin(), children.end());
+
+    // Update population
     this->population = all;
+
 
     vector<vector<Individual *>> fronts = this->fastNonDominatedSort();
 
@@ -1095,10 +1107,10 @@ void NSGAII::NSGA2NextGen_operators(int seed) {
 void NSGAII::NSGA2NextGen_operators_ND(int seed) {
     vector<Individual *> parents = this->population;
     vector<Individual *> nextGen;
-
+    
     // Recombine and mutate parents into this vector
     vector<Individual *> children = makenewpop_operators_ND(parents, seed);
-
+    
     // join parents and children into this vector
     vector<Individual *> all = parents;
     all.reserve(this->population.size() + children.size());
@@ -1513,18 +1525,15 @@ Individual *NSGAII::INGM_V2(Individual *individual, int seed) {
                     auxNewIndividual->getTEC() < individual->getTEC()) {
                     return auxNewIndividual;
                 }
-
-                    // If auxNewIndividual doesn't dominate the parent individual, then update the archive
-                else {
-                    this->updateArchive(auxNewIndividual);
-                }
-
-                // Delete the auxNewIndividual
-                //delete auxNewIndividual;
+                 // If auxNewIndividual dominates individual in one objective
+                /* else  if (auxNewIndividual->getTFT() < individual->getTFT() ||
+                         auxNewIndividual->getTEC() < individual->getTEC()) {
+                    return auxNewIndividual;
+                }*/
             }
         }
     }
-    return individual;
+    return nullptr;
 }
 
 Individual *NSGAII::SNGM(Individual *individual, int seed) {
@@ -1875,10 +1884,11 @@ vector<Individual *> NSGAII::makenewpop_operators_ND(vector<Individual *> parent
     // For each individual in parents, generate a neighbour
     int i = 0;
     int cont = 0;
+    
     while (children.size() < parents.size()) {
         // Randomly choose which operator will be used to generate a neighbour
         int rand_op = rand.next() % 3; // 0 = INGM, 1 = SNGM, 2 = HNGM
-
+        
         if (rand_op == 0) {
             individual_ptr = this->INGM_ND(parents[i], rand.next() % 30000);
         } else if (rand_op == 1) {
@@ -2033,10 +2043,8 @@ void NSGAII::run(int seed) {
     this->assignCrowdingDistance();
 
     if (this->outputEnabled) {
-        Util::outputToFile("exp/"+to_string(seed) + "/after_0.csv", this->generatePopulationCSVString(), false);
-
+        Util::outputToFile("../analysis/exp/"+to_string(seed) + "/after_0.csv", this->generatePopulationCSVString(), false);
     }
-
 
     //
     int counter = 0;
@@ -2054,7 +2062,7 @@ void NSGAII::run(int seed) {
         counter++;
 
         if (this->outputEnabled) {
-            Util::outputToFile("exp/"+to_string(seed) + "/after_" + to_string(counter) + ".csv",
+            Util::outputToFile("../analysis/exp/"+to_string(seed) + "/after_" + to_string(counter) + ".csv",
                                this->generatePopulationCSVString(), false);
         }
 
@@ -2063,9 +2071,9 @@ void NSGAII::run(int seed) {
     this->fastNonDominatedSort();
 
     // Add the pareto front to the archive
-    for (Individual *i: this->getParetoFront()) {
-        this->updateArchive(i);
-    }
+    // for (Individual *i: this->getParetoFront()) {
+    //     this->updateArchive(i);
+    // }
 }
 
 void NSGAII::setOutputEnabled(bool outputEnabled) {

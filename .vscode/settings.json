@@ -10,6 +10,7 @@
         "mutex": "cpp",
         "ostream": "cpp",
         "stop_token": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "tuple": "cpp"
     }
 }
