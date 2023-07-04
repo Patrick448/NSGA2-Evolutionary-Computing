@@ -419,45 +419,45 @@ Individual *NSGAII::balancedRandomIndividualGenerator(int s)
     Individual *individual = new Individual(this->problem->getN(), this->problem->getM(), this->problem->getF());
 
     // Vector that indicates if a job (id = index) has already been allocated
-    vector<bool> job_allocated(this->problem->getN(), false);
+    vector<bool> jobAllocated(this->problem->getN(), false);
 
-    vector<int> jobs_to_allocate;
+    vector<int> jobsToAllocate;
     for (size_t i = 0; i < this->problem->getN(); i++)
     {
-        jobs_to_allocate.push_back(i);
+        jobsToAllocate.push_back(i);
     }
 
     // Allocate the jobs equally to the factories
-    int f_id = 0;
-    while (jobs_to_allocate.size())
+    int factoryId = 0;
+    while (jobsToAllocate.size())
     {
-        int random_num = rand.next() % jobs_to_allocate.size();
-        Job *job = new Job(jobs_to_allocate[random_num], this->problem->getM());
-        job->setT(this->problem->getAllT()[jobs_to_allocate[random_num]]);
+        int randomNum = rand.next() % jobsToAllocate.size();
+        Job *job = new Job(jobsToAllocate[randomNum], this->problem->getM());
+        job->setT(this->problem->getAllT()[jobsToAllocate[randomNum]]);
 
         // Set a random speed for each machine
         for (int j = 0; j < this->problem->getM(); j++)
         {
-            int random_num = rand.next() % this->problem->getAllSpeeds().size();
-            individual->setV(job->getId(), j, this->problem->getAllSpeeds()[random_num]);
-            job->setVForMachine(j, this->problem->getAllSpeeds()[random_num]);
+            int randomNum = rand.next() % this->problem->getAllSpeeds().size();
+            individual->setV(job->getId(), j, this->problem->getAllSpeeds()[randomNum]);
+            job->setVForMachine(j, this->problem->getAllSpeeds()[randomNum]);
         }
 
         // Select the factory
-        if (f_id == this->problem->getF())
+        if (factoryId == this->problem->getF())
         {
-            f_id = 0;
+            factoryId = 0;
         }
 
         // Choose a random position to allocate the job
-        int random_position = rand.next() % (individual->getFactory(f_id)->getJobs().size() + 1);
+        int random_position = rand.next() % (individual->getFactory(factoryId)->getJobs().size() + 1);
 
         // Allocate the job
-        individual->getFactory(f_id)->addJobAtPosition(job, random_position);
+        individual->getFactory(factoryId)->addJobAtPosition(job, random_position);
 
         // Erase the allocated job from the list
-        jobs_to_allocate.erase(jobs_to_allocate.begin() + random_num);
-        f_id++;
+        jobsToAllocate.erase(jobsToAllocate.begin() + randomNum);
+        factoryId++;
 
         // Time control
         // gettimeofday(&this->end, 0);
@@ -482,58 +482,58 @@ Individual *NSGAII::totalRandomIndividualGenerator(int s)
     Individual *individual = new Individual(this->problem->getN(), this->problem->getM(), this->problem->getF());
 
     // Vector that indicates if a job (id = index) has already been allocated
-    vector<bool> job_allocated(this->problem->getN(), false);
+    vector<bool> jobAllocated(this->problem->getN(), false);
 
-    vector<int> jobs_to_allocate;
+    vector<int> jobsToAllocate;
     for (size_t i = 0; i < this->problem->getN(); i++)
     {
-        jobs_to_allocate.push_back(i);
+        jobsToAllocate.push_back(i);
     }
 
     // Allocate one job in each factory
     for (int i = 0; i < this->problem->getF(); i++)
     {
-        int random_num = rand.next() % jobs_to_allocate.size();
-        Job *job = new Job(jobs_to_allocate[random_num], this->problem->getM());
-        job->setT(this->problem->getAllT()[jobs_to_allocate[random_num]]);
+        int randomNum = rand.next() % jobsToAllocate.size();
+        Job *job = new Job(jobsToAllocate[randomNum], this->problem->getM());
+        job->setT(this->problem->getAllT()[jobsToAllocate[randomNum]]);
 
         // Set a random speed for each machine
         for (int j = 0; j < this->problem->getM(); j++)
         {
-            int random_num = rand.next() % this->problem->getAllSpeeds().size();
-            individual->setV(job->getId(), j, this->problem->getAllSpeeds()[random_num]);
-            job->setVForMachine(j, this->problem->getAllSpeeds()[random_num]);
+            int randomNum = rand.next() % this->problem->getAllSpeeds().size();
+            individual->setV(job->getId(), j, this->problem->getAllSpeeds()[randomNum]);
+            job->setVForMachine(j, this->problem->getAllSpeeds()[randomNum]);
         }
         individual->getFactory(i)->addJobAtLastPosition(job);
-        jobs_to_allocate.erase(jobs_to_allocate.begin() + random_num);
+        jobsToAllocate.erase(jobsToAllocate.begin() + randomNum);
     }
 
     // Allocate the remaining jobs randomly
-    while (jobs_to_allocate.size())
+    while (jobsToAllocate.size())
     {
-        int random_num = rand.next() % jobs_to_allocate.size();
-        Job *job = new Job(jobs_to_allocate[random_num], this->problem->getM());
-        job->setT(this->problem->getAllT()[jobs_to_allocate[random_num]]);
+        int randomNum = rand.next() % jobsToAllocate.size();
+        Job *job = new Job(jobsToAllocate[randomNum], this->problem->getM());
+        job->setT(this->problem->getAllT()[jobsToAllocate[randomNum]]);
 
         // Set a random speed for each machine
         for (int j = 0; j < this->problem->getM(); j++)
         {
-            int random_num = rand.next() % this->problem->getAllSpeeds().size();
-            individual->setV(job->getId(), j, this->problem->getAllSpeeds()[random_num]);
-            job->setVForMachine(j, this->problem->getAllSpeeds()[random_num]);
+            int randomNum = rand.next() % this->problem->getAllSpeeds().size();
+            individual->setV(job->getId(), j, this->problem->getAllSpeeds()[randomNum]);
+            job->setVForMachine(j, this->problem->getAllSpeeds()[randomNum]);
         }
 
         // Choose a random factory to allocate the job
-        int f_id = rand.next() % this->problem->getF();
+        int factoryId = rand.next() % this->problem->getF();
 
         // Choose a random position to allocate the job
-        int random_position = rand.next() % (individual->getFactory(f_id)->getJobs().size() + 1);
+        int random_position = rand.next() % (individual->getFactory(factoryId)->getJobs().size() + 1);
 
         // Allocate the job
-        individual->getFactory(f_id)->addJobAtPosition(job, random_position);
+        individual->getFactory(factoryId)->addJobAtPosition(job, random_position);
 
         // Erase the allocated job from the list
-        jobs_to_allocate.erase(jobs_to_allocate.begin() + random_num);
+        jobsToAllocate.erase(jobsToAllocate.begin() + randomNum);
     }
 
     // Initialize the of jobs strat times each factory
@@ -1024,7 +1024,7 @@ int roulette(vector<vector<Individual *>> fronts, int seed)
     return frontIndex;
 }
 
-void NSGAII::makeChildren(int seed)
+vector<Individual *> NSGAII::makeChildren(int seed)
 {
     srand(seed);
 
@@ -1060,10 +1060,79 @@ void NSGAII::makeChildren(int seed)
         // If probability is less than mutation rate, then mutate
         if (probability < this->mutationRate)
         {
-            children.push_back(this->INGM(this->population[i], seed));      // TODO: é preciso lembrar se o INGM está mesmo funcionando
+            // TODO: é preciso lembrar se o INGM está mesmo funcionando
+            // children.push_back(this->INGM(this->population[i], seed));
             // Eu acredito que poderíamos deixar o híbrido ao invés de só INGM
+
+            // Criei uma nova função INGM chamada INGM_V2 que é uma versão que acredito estar mais correta do que
+            // a implementação anterior e talvez não fique demorando tanto para achar uma solução que domine o pai
+            children.push_back(this->INGM_V2(this->population[i], seed));
         }
     }
+
+    return children;
+}
+
+// Criei esse método só para não ter que apagar o NSGA2NextGen. Porém, eles são basicamente iguais. Só muda o makeNewPop que aqui é makeChildren
+void NSGAII::NSGA2NextGeneration(int seed)
+{
+    Xoshiro256plus rand(seed);
+
+    // Parents and next generation
+    vector<Individual *> parents = this->population;
+    vector<Individual *> nextGen;
+
+    // Recombine and mutate parents into this vector
+    vector<Individual *> children = this->makeChildren(seed);
+
+    // join parents and children into this vector
+    vector<Individual *> all = parents;
+    all.reserve(this->population.size() + children.size());
+    all.insert(all.end(), children.begin(), children.end());
+    this->population = all;
+
+    vector<vector<Individual *>> fronts = this->fastNonDominatedSort();
+
+    int inserted = 0;
+    int n = parents.size();
+    nextGen.reserve(n);
+
+    // insere enquanto o numero de elementos inseridos for menor q n
+    int l = 0;
+    for (int i = 0; inserted < n && i < fronts.size() - 1; i++)
+    {
+        // nextGen.reserve(nextGen.size() + fronts[i].size());
+        ::assignCrowdingDistance(fronts[i]);
+
+        if (inserted + fronts[i].size() > n)
+        {
+            l = i;
+            break;
+        }
+
+        for (int j = 0; j < fronts[i].size(); j++)
+        {
+            nextGen.push_back(fronts[i][j]);
+            inserted++;
+        }
+    }
+
+    //::assignCrowdingDistance(fronts.back());
+    /*if(nextGen.size() + fronts[l].size() == n){
+        nextGen.reserve(fronts[l].size());
+        nextGen.insert(nextGen.end(), fronts[l].begin(), fronts[l].end());
+    }*/
+    if (nextGen.size() < n)
+    {
+        // nextGen.reserve(n);
+        sort(fronts[l].begin(), fronts[l].end(), crowdedCompare);
+        for (int i = 0; nextGen.size() < n; i++)
+        {
+            nextGen.push_back(fronts[l][i]);
+        }
+    }
+
+    this->population = nextGen;
 }
 
 void NSGAII::NSGA2NextGen(int seed)
@@ -1495,18 +1564,18 @@ Individual *NSGAII::INGM(Individual *individual, int seed)
     int randomObjective = rand.next() % 2; // 0 = TFT, 1 = TEC
 
     // Get the factory with the largest TFT or TEC
-    float largest = 0;
-    int largestIndex = -1;
+    float largestFactory = 0;
+    int largestFactoryIndex = -1;
 
     if (randomObjective == 0) // Optimize TFT
     {
         for (int f = 0; f < this->problem->getF(); f++)
         {
             float fTFT = newIndividual->getFactory(f)->getTFT();
-            if (fTFT > largest)
+            if (fTFT > largestFactory)
             {
-                largest = fTFT;
-                largestIndex = f;
+                largestFactory = fTFT;
+                largestFactoryIndex = f;
             }
         }
     }
@@ -1515,18 +1584,18 @@ Individual *NSGAII::INGM(Individual *individual, int seed)
         for (int f = 0; f < this->problem->getF(); f++)
         {
             float fTEC = newIndividual->getFactory(f)->getTEC();
-            if (fTEC > largest)
+            if (fTEC > largestFactory)
             {
-                largest = fTEC;
-                largestIndex = f;
+                largestFactory = fTEC;
+                largestFactoryIndex = f;
             }
         }
     }
 
-    vector<Job *> jobsToTry = newIndividual->getFactory(largestIndex)->getJobs();
-    int largestFactoryTotalJobs = newIndividual->getFactory(largestIndex)->getNumJobs();
+    vector<Job *> jobsToTry = newIndividual->getFactory(largestFactoryIndex)->getJobs();
+    int largestFactoryFactoryTotalJobs = newIndividual->getFactory(largestFactoryIndex)->getNumJobs();
 
-    while (jobsToTry.size() > largestFactoryTotalJobs / 2)
+    while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2)
     {
         // Get a random job and extract from the factory
         int randomJobIndex = rand.next() % jobsToTry.size();
@@ -1536,14 +1605,14 @@ Individual *NSGAII::INGM(Individual *individual, int seed)
         // Change the origin factory
         if (randomObjective == 0) // Optimize TFT
         {
-            newIndividual->getFactory(largestIndex)->randSpeedUp(seed);
-            newIndividual->getFactory(largestIndex)->speedUp();
+            newIndividual->getFactory(largestFactoryIndex)->randSpeedUp(seed);
+            newIndividual->getFactory(largestFactoryIndex)->speedUp();
         }
         else // Optimize TEC
         {
-            newIndividual->getFactory(largestIndex)->randSpeedDown(seed);
-            newIndividual->getFactory(largestIndex)->speedDown();
-            newIndividual->getFactory(largestIndex)->rightShift();
+            newIndividual->getFactory(largestFactoryIndex)->randSpeedDown(seed);
+            newIndividual->getFactory(largestFactoryIndex)->speedDown();
+            newIndividual->getFactory(largestFactoryIndex)->rightShift();
         }
 
         // Try inserting the job to every position of every factory until the individual dominates the original one
@@ -1553,7 +1622,7 @@ Individual *NSGAII::INGM(Individual *individual, int seed)
             for (int pos = 0; pos < factoryNumJobs; pos++)
             {
                 // Insert the job to the factory
-                newIndividual->insert(largestIndex, f, job, pos);
+                newIndividual->insert(largestFactoryIndex, f, job, pos);
 
                 // Change the factory
                 if (randomObjective == 0) // Optimize TFT
@@ -1576,13 +1645,117 @@ Individual *NSGAII::INGM(Individual *individual, int seed)
                          newIndividual->getTEC() < individual->getTEC())
                 {
 
-                    // this->updateArchive(newIndividual);
+                    this->updateArchive(newIndividual);
                 }
-                newIndividual->insert(f, largestIndex, job, randomJobIndex);
+                newIndividual->insert(f, largestFactoryIndex, job, randomJobIndex);
             }
         }
     }
     return nullptr;
+}
+
+// Second version of INGM with some changes (Guilherme - 03/07)
+Individual *NSGAII::INGM_V2(Individual *individual, int seed)
+{
+    Xoshiro256plus rand(seed);
+    Individual *newIndividual = new Individual(individual);
+
+    // Randomly choose the objective for optimization
+    int randomObjective = rand.next() % 2; // 0 = TFT, 1 = TEC
+
+    // Get the factory with the largest TFT or TEC
+    float largestFactory = 0;
+    int largestFactoryIndex = -1;
+
+    if (randomObjective == 0) // Optimize TFT
+    {
+        for (int f = 0; f < this->problem->getF(); f++)
+        {
+            float fTFT = newIndividual->getFactory(f)->getTFT();
+            if (fTFT > largestFactory)
+            {
+                largestFactory = fTFT;
+                largestFactoryIndex = f;
+            }
+        }
+    }
+    else // Optimize TEC
+    {
+        for (int f = 0; f < this->problem->getF(); f++)
+        {
+            float fTEC = newIndividual->getFactory(f)->getTEC();
+            if (fTEC > largestFactory)
+            {
+                largestFactory = fTEC;
+                largestFactoryIndex = f;
+            }
+        }
+    }
+
+    vector<Job *> jobsToTry = newIndividual->getFactory(largestFactoryIndex)->getJobs();
+    int largestFactoryFactoryTotalJobs = newIndividual->getFactory(largestFactoryIndex)->getNumJobs();
+
+    while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2)
+    {
+        // Get a random job and extract from the factory
+        int randomJobIndex = rand.next() % jobsToTry.size();
+        Job *job = jobsToTry[randomJobIndex];
+        jobsToTry.erase(jobsToTry.begin() + randomJobIndex);
+
+        // Try inserting the job to every position of every factory until the individual dominates the original one
+        for (int f = 0; f < this->problem->getF(); f++)
+        {
+            int factoryNumJobs = newIndividual->getFactory(f)->getNumJobs();
+            for (int pos = 0; pos < factoryNumJobs; pos++)
+            {
+                Individual *auxNewIndividual = new Individual(newIndividual);
+
+                // Insert the job to the factory
+                auxNewIndividual->insert(largestFactoryIndex, f, job, pos);
+
+                // Change the factory
+                if (randomObjective == 0) // Optimize TFT
+                {
+                    // Change the origin factory
+                    auxNewIndividual->getFactory(largestFactoryIndex)->randSpeedUp(seed);
+                    auxNewIndividual->getFactory(largestFactoryIndex)->speedUp();
+
+                    // Change the destination factory
+                    auxNewIndividual->getFactory(f)->randSpeedUp(seed);
+                    auxNewIndividual->getFactory(f)->speedUp();
+                }
+                else // Optimize TEC
+                {
+                    // Change the origin factory
+                    auxNewIndividual->getFactory(largestFactoryIndex)->randSpeedDown(seed);
+                    auxNewIndividual->getFactory(largestFactoryIndex)->speedDown();
+                    auxNewIndividual->getFactory(largestFactoryIndex)->rightShift();
+
+                    // Change the destination factory
+                    auxNewIndividual->getFactory(f)->randSpeedDown(seed);
+                    auxNewIndividual->getFactory(f)->speedDown();
+                    auxNewIndividual->getFactory(f)->rightShift();
+                }
+
+                // Compare the new individual with the original one
+                // If auxNewIndividual dominates individual
+                if (auxNewIndividual->getTFT() < individual->getTFT() &&
+                    auxNewIndividual->getTEC() < individual->getTEC())
+                {
+                    return auxNewIndividual;
+                }
+                else if (auxNewIndividual->getTFT() < individual->getTFT() ||
+                         auxNewIndividual->getTEC() < individual->getTEC())
+                {
+
+                    this->updateArchive(auxNewIndividual);
+                }
+                // Delete the auxNewIndividual
+                delete auxNewIndividual;
+            }
+        }
+    }
+    return individual;
 }
 
 Individual *NSGAII::SNGM(Individual *individual, int seed)
@@ -1594,18 +1767,18 @@ Individual *NSGAII::SNGM(Individual *individual, int seed)
     int randomObjective = rand.next() % 2; // 0 = TFT, 1 = TEC
 
     // Get the factory with the largest TFT or TEC
-    float largest = 0;
-    int largestIndex = -1;
+    float largestFactory = 0;
+    int largestFactoryIndex = -1;
 
     if (randomObjective == 0) // Optimize TFT
     {
         for (int f = 0; f < this->problem->getF(); f++)
         {
             float fTFT = newIndividual->getFactory(f)->getTFT();
-            if (fTFT > largest)
+            if (fTFT > largestFactory)
             {
-                largest = fTFT;
-                largestIndex = f;
+                largestFactory = fTFT;
+                largestFactoryIndex = f;
             }
         }
     }
@@ -1614,17 +1787,17 @@ Individual *NSGAII::SNGM(Individual *individual, int seed)
         for (int f = 0; f < this->problem->getF(); f++)
         {
             float fTEC = newIndividual->getFactory(f)->getTEC();
-            if (fTEC > largest)
+            if (fTEC > largestFactory)
             {
-                largest = fTEC;
-                largestIndex = f;
+                largestFactory = fTEC;
+                largestFactoryIndex = f;
             }
         }
     }
 
-    vector<Job *> jobsToTry = newIndividual->getFactory(largestIndex)->getJobs();
-    int largestFactoryTotalJobs = newIndividual->getFactory(largestIndex)->getNumJobs();
-    while (jobsToTry.size() > largestFactoryTotalJobs / 2)
+    vector<Job *> jobsToTry = newIndividual->getFactory(largestFactoryIndex)->getJobs();
+    int largestFactoryFactoryTotalJobs = newIndividual->getFactory(largestFactoryIndex)->getNumJobs();
+    while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2)
     {
         // Get a random job
         int randomJobIndex = rand.next() % jobsToTry.size();
@@ -1658,22 +1831,22 @@ Individual *NSGAII::SNGM(Individual *individual, int seed)
                 if (tag)
                     break;
 
-                newIndividual->swap(largestIndex, f, job, job2);
+                newIndividual->swap(largestFactoryIndex, f, job, job2);
 
                 // Change the factories
                 if (randomObjective == 0) // Optimize TFT
                 {
-                    newIndividual->getFactory(largestIndex)->randSpeedUp(seed);
-                    newIndividual->getFactory(largestIndex)->speedUp();
+                    newIndividual->getFactory(largestFactoryIndex)->randSpeedUp(seed);
+                    newIndividual->getFactory(largestFactoryIndex)->speedUp();
 
                     newIndividual->getFactory(f)->randSpeedUp(seed);
                     newIndividual->getFactory(f)->speedUp();
                 }
                 else // Optimize TEC
                 {
-                    newIndividual->getFactory(largestIndex)->randSpeedDown(seed);
-                    newIndividual->getFactory(largestIndex)->speedDown();
-                    newIndividual->getFactory(largestIndex)->rightShift();
+                    newIndividual->getFactory(largestFactoryIndex)->randSpeedDown(seed);
+                    newIndividual->getFactory(largestFactoryIndex)->speedDown();
+                    newIndividual->getFactory(largestFactoryIndex)->rightShift();
 
                     newIndividual->getFactory(f)->randSpeedDown(seed);
                     newIndividual->getFactory(f)->speedDown();
@@ -1690,7 +1863,7 @@ Individual *NSGAII::SNGM(Individual *individual, int seed)
 
                     // this->updateArchive(newIndividual);
                 }
-                newIndividual->swap(f, largestIndex, job, job2);
+                newIndividual->swap(f, largestFactoryIndex, job, job2);
             }
         }
     }
@@ -1767,18 +1940,18 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed)
     int randomObjective = rand.next() % 2; // 0 = TFT, 1 = TEC
 
     // Get the factory with the largest TFT or TEC
-    float largest = 0;
-    int largestIndex = -1;
+    float largestFactory = 0;
+    int largestFactoryIndex = -1;
 
     if (randomObjective == 0) // Optimize TFT
     {
         for (int f = 0; f < this->problem->getF(); f++)
         {
             float fTFT = newIndividual->getFactory(f)->getTFT();
-            if (fTFT > largest)
+            if (fTFT > largestFactory)
             {
-                largest = fTFT;
-                largestIndex = f;
+                largestFactory = fTFT;
+                largestFactoryIndex = f;
             }
         }
     }
@@ -1787,18 +1960,18 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed)
         for (int f = 0; f < this->problem->getF(); f++)
         {
             float fTEC = newIndividual->getFactory(f)->getTEC();
-            if (fTEC > largest)
+            if (fTEC > largestFactory)
             {
-                largest = fTEC;
-                largestIndex = f;
+                largestFactory = fTEC;
+                largestFactoryIndex = f;
             }
         }
     }
 
-    vector<Job *> jobsToTry = newIndividual->getFactory(largestIndex)->getJobs();
-    int largestFactoryTotalJobs = newIndividual->getFactory(largestIndex)->getNumJobs();
+    vector<Job *> jobsToTry = newIndividual->getFactory(largestFactoryIndex)->getJobs();
+    int largestFactoryFactoryTotalJobs = newIndividual->getFactory(largestFactoryIndex)->getNumJobs();
 
-    while (jobsToTry.size() > largestFactoryTotalJobs / 2)
+    while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2)
     {
         // Get a random job and extract from the factory
         int randomJobIndex = rand.next() % jobsToTry.size();
@@ -1808,14 +1981,14 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed)
         // Change the origin factory
         if (randomObjective == 0) // Optimize TFT
         {
-            newIndividual->getFactory(largestIndex)->randSpeedUp(seed);
-            newIndividual->getFactory(largestIndex)->speedUp();
+            newIndividual->getFactory(largestFactoryIndex)->randSpeedUp(seed);
+            newIndividual->getFactory(largestFactoryIndex)->speedUp();
         }
         else // Optimize TEC
         {
-            newIndividual->getFactory(largestIndex)->randSpeedDown(seed);
-            newIndividual->getFactory(largestIndex)->speedDown();
-            newIndividual->getFactory(largestIndex)->rightShift();
+            newIndividual->getFactory(largestFactoryIndex)->randSpeedDown(seed);
+            newIndividual->getFactory(largestFactoryIndex)->speedDown();
+            newIndividual->getFactory(largestFactoryIndex)->rightShift();
         }
 
         // Try inserting the job to every position of every factory until the individual dominates the original one
@@ -1825,7 +1998,7 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed)
             for (int pos = 0; pos < factoryNumJobs; pos++)
             {
                 // Insert the job to the factory
-                newIndividual->insert(largestIndex, f, job, pos);
+                newIndividual->insert(largestFactoryIndex, f, job, pos);
 
                 // Change the factory
                 if (randomObjective == 0) // Optimize TFT
@@ -1845,7 +2018,7 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed)
                     // this->updateArchive(newIndividual);
                     return newIndividual;
                 }
-                newIndividual->insert(f, largestIndex, job, randomJobIndex);
+                newIndividual->insert(f, largestFactoryIndex, job, randomJobIndex);
             }
         }
     }
@@ -1861,18 +2034,18 @@ Individual *NSGAII::SNGM_ND(Individual *individual, int seed)
     int randomObjective = rand.next() % 2; // 0 = TFT, 1 = TEC
 
     // Get the factory with the largest TFT or TEC
-    float largest = 0;
-    int largestIndex = -1;
+    float largestFactory = 0;
+    int largestFactoryIndex = -1;
 
     if (randomObjective == 0) // Optimize TFT
     {
         for (int f = 0; f < this->problem->getF(); f++)
         {
             float fTFT = newIndividual->getFactory(f)->getTFT();
-            if (fTFT > largest)
+            if (fTFT > largestFactory)
             {
-                largest = fTFT;
-                largestIndex = f;
+                largestFactory = fTFT;
+                largestFactoryIndex = f;
             }
         }
     }
@@ -1881,17 +2054,17 @@ Individual *NSGAII::SNGM_ND(Individual *individual, int seed)
         for (int f = 0; f < this->problem->getF(); f++)
         {
             float fTEC = newIndividual->getFactory(f)->getTEC();
-            if (fTEC > largest)
+            if (fTEC > largestFactory)
             {
-                largest = fTEC;
-                largestIndex = f;
+                largestFactory = fTEC;
+                largestFactoryIndex = f;
             }
         }
     }
 
-    vector<Job *> jobsToTry = newIndividual->getFactory(largestIndex)->getJobs();
-    int largestFactoryTotalJobs = newIndividual->getFactory(largestIndex)->getNumJobs();
-    while (jobsToTry.size() > largestFactoryTotalJobs / 2)
+    vector<Job *> jobsToTry = newIndividual->getFactory(largestFactoryIndex)->getJobs();
+    int largestFactoryFactoryTotalJobs = newIndividual->getFactory(largestFactoryIndex)->getNumJobs();
+    while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2)
     {
         // Get a random job
         int randomJobIndex = rand.next() % jobsToTry.size();
@@ -1922,22 +2095,22 @@ Individual *NSGAII::SNGM_ND(Individual *individual, int seed)
                 if (tag)
                     break;
 
-                newIndividual->swap(largestIndex, f, job, job2);
+                newIndividual->swap(largestFactoryIndex, f, job, job2);
 
                 // Change the factories
                 if (randomObjective == 0) // Optimize TFT
                 {
-                    newIndividual->getFactory(largestIndex)->randSpeedUp(seed);
-                    newIndividual->getFactory(largestIndex)->speedUp();
+                    newIndividual->getFactory(largestFactoryIndex)->randSpeedUp(seed);
+                    newIndividual->getFactory(largestFactoryIndex)->speedUp();
 
                     newIndividual->getFactory(f)->randSpeedUp(seed);
                     newIndividual->getFactory(f)->speedUp();
                 }
                 else // Optimize TEC
                 {
-                    newIndividual->getFactory(largestIndex)->randSpeedDown(seed);
-                    newIndividual->getFactory(largestIndex)->speedDown();
-                    newIndividual->getFactory(largestIndex)->rightShift();
+                    newIndividual->getFactory(largestFactoryIndex)->randSpeedDown(seed);
+                    newIndividual->getFactory(largestFactoryIndex)->speedDown();
+                    newIndividual->getFactory(largestFactoryIndex)->rightShift();
 
                     newIndividual->getFactory(f)->randSpeedDown(seed);
                     newIndividual->getFactory(f)->speedDown();
@@ -1949,7 +2122,7 @@ Individual *NSGAII::SNGM_ND(Individual *individual, int seed)
                     // this->updateArchive(newIndividual);
                     return newIndividual;
                 }
-                newIndividual->swap(f, largestIndex, job, job2);
+                newIndividual->swap(f, largestFactoryIndex, job, job2);
             }
         }
     }
@@ -2161,7 +2334,7 @@ void NSGAII::run(int seed)
             break;
         }
 
-        this->NSGA2NextGen(counter + seed);
+        this->NSGA2NextGeneration(counter + seed);
 
         counter++;
     }
@@ -2171,6 +2344,6 @@ void NSGAII::run(int seed)
     // Add the pareto front to the archive
     for (Individual *i : this->getParetoFront())
     {
-        this->paretoArchive.push_back(i);
+        this->updateArchive(i);
     }
 }

@@ -201,10 +201,10 @@ void Individual::printIndividual()
     }
 }
 
-void Individual::insert(int from_f_id, int to_f_id, Job *job, int pos)
+void Individual::insert(int fromFactoryId, int toFactoryId, Job *job, int pos)
 {
-    this->factories[from_f_id]->removeJob(job->getId());
-    this->factories[to_f_id]->insertJobAtPos(job, pos);
+    this->factories[fromFactoryId]->removeJob(job->getId());
+    this->factories[toFactoryId]->insertJobAtPos(job, pos);
 }
 
 void Individual::swap(int f1_id, int f2_id, Job *job1, Job *job2)

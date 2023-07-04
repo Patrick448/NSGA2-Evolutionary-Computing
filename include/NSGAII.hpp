@@ -65,9 +65,13 @@ public:
     Individual *HNGM_ND(Individual *sol, int seed); // Hybrid-based new-individual generation method
     vector<Individual *> makenewpop_operators_ND(vector<Individual *> parents, int seed);
 
+    // New methods
+    Individual *INGM_V2(Individual *sol, int seed);
+
     // Run methods
     void run(int seed);
-    void makeChildren(int seed);
+    vector<Individual *> makeChildren(int seed);
+    void NSGA2NextGeneration(int seed);
 };
 
 #endif // NSGAII_HPP
