@@ -149,6 +149,7 @@ Individual* Util::minTFTSol(vector<Individual*> &v){
 }
 
 
+// Functions that came from main
 
 float euclideanDistance(Individual* sol1, Individual* sol2){
     float sol1Y = sol1->getTEC();
@@ -297,7 +298,6 @@ string Util::generateCSV(Factory* factory)
 
 void Util::allocate(Individual* sol){
     Util::allocatedIndividuals.push_back(sol);
-
 }
 
 void Util::deallocate(){
@@ -306,4 +306,69 @@ void Util::deallocate(){
     }
 
     Util::allocatedIndividuals.clear();
+}
+
+void Util::outputToFile(string path, string text, bool append){
+    ofstream outputf;
+
+    if(append){
+        outputf.open(path, std::ios_base::app);
+    }else{
+        outputf.open(path);
+    }
+
+    outputf << text;
+    outputf.close();
+}
+
+vector<Individual*> Util::joinFronts(vector<vector<Individual*>> fronts){
+    vector<Individual*> result ;
+
+    for(int i=0; i< fronts.size(); i++){
+        for(int j=0; j< fronts[i].size(); j++){
+            result.push_back(fronts[i][j]);
+        }
+    }
+
+    return result;
+}
+
+float Util::meanDMetric(vector<vector<Individual*>> &paretoArchive, vector<Individual*> &PF){
+
+    float sum = 0;
+    for(int i=0; i< paretoArchive.size(); i++){
+        sum+= Util::DMetric(PF, paretoArchive[i]);
+    }
+
+    return sum/paretoArchive.size();
+}
+
+float Util::meanSMetric(vector<vector<Individual*>> &paretoArchive, vector<Individual*> &PF){
+
+    float sum = 0;
+    for(int i=0; i< paretoArchive.size(); i++){
+        sum+= Util::SMetric(PF, paretoArchive[i]);
+    }
+
+    return sum/paretoArchive.size();
+}
+
+float Util::meanGDMetric(vector<vector<Individual*>> &paretoArchive, vector<Individual*> &PF){
+
+    float sum = 0;
+    for(int i=0; i< paretoArchive.size(); i++){
+        sum+= Util::GDMetric(PF, paretoArchive[i]);
+    }
+
+    return sum/paretoArchive.size();
+}
+
+float Util::meanIGDMetric(vector<vector<Individual*>> &paretoArchive, vector<Individual*> &PF){
+
+    float sum = 0;
+    for(int i=0; i< paretoArchive.size(); i++){
+        sum+= Util::IGDMetric(PF, paretoArchive[i]);
+    }
+
+    return sum/paretoArchive.size();
 }

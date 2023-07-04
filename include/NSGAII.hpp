@@ -15,10 +15,13 @@ private:
     vector<Individual *> paretoArchive;
     vector<vector<Individual *>> dominationFronts;
 
+    float crossoverRate;
+    float mutationRate;
+
     struct timeval begin, end;
 
 public:
-    NSGAII(Problem *problem);
+    NSGAII(Problem *problem, float crossoverRate, float mutationRate);
     ~NSGAII();
 
     vector<Individual *> getPopulation();
@@ -36,8 +39,8 @@ public:
     Individual *minSMinTEC();
     Individual *randSMinTEC(int seed);
 
-    void balancedRandomIndividualGenerator(int s);
-    void totalRandomIndividualGenerator(int s);
+    Individual *balancedRandomIndividualGenerator(int s);
+    Individual *totalRandomIndividualGenerator(int s);
 
     void printPopulation();
     string generatePopulationCSVString();
@@ -61,6 +64,10 @@ public:
     Individual *SNGM_ND(Individual *sol, int seed); // Swap-based new-individual generation method
     Individual *HNGM_ND(Individual *sol, int seed); // Hybrid-based new-individual generation method
     vector<Individual *> makenewpop_operators_ND(vector<Individual *> parents, int seed);
+
+    // Run methods
+    void run(int seed);
+    void makeChildren(int seed);
 };
 
 #endif // NSGAII_HPP

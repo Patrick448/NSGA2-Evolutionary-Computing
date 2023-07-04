@@ -14,6 +14,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <stdlib.h>
+#include <bits/stdc++.h>
 
 #include "random/Xoshiro256plus.h"
 
