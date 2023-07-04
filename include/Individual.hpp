@@ -32,14 +32,9 @@ public:
     Individual(int n, int m, int F); // Constructor (n = number of jobs, m = number of machines, F = number of factories)
     Individual(Individual* sol);
     ~Individual();
-
-    vector<vector<int>> getDistribution();  // not implemented
-    vector<vector<float>> getV();           // not implemented
     float getTEC();
     float getTFT();
-    float getTFTUsingMatrix();              
-    vector<int> getAllJobsAllocation();     // not implemented
-    int getJobAllocation(int jobId);       // not implemented
+    float getTFTUsingMatrix();
     Factory *getFactory(int factoryId);          // not implemented    
     int getNumFactories();
 
@@ -47,12 +42,7 @@ public:
     bool crowdedCompare(Individual *other);
 
     void replaceFactory(int factoryId, Factory *factory);
-    void setSequence(int factoryId, vector<int> seq);    // not implemented
-    void setV(int jobId, int machineId, float v);    
-    void setEC_f(int factoryId, float ec);               // not implemented
-    void setFT_f(int factoryId, float ft);               // not implemented
-    void setJobAllocation(int jobId, int factoryId);    // not implemented
-
+    void setV(int jobId, int machineId, float v);
     void setDominationRank(int val);
     int getDominationRank();
     void setDominationCounter(int val);
@@ -62,13 +52,6 @@ public:
     void incrementCrowdingDistance(float val);
     void incrementDominationCounter(int val);
     vector<Factory*> getFactories();
-
-    // Operators
-    void speedUp(int factoryId);                     // not implemented
-    void randSpeedUp(int factoryId);                 // not implemented
-    void speedDown(int factoryId);                   // not implemented
-    void randSpeedDown(int factoryId);               // not implemented
-    void rightShift(int factoryId);                  // not implemented
 
     void insert(int fromFactoryId, int toFactoryId, Job *job, int pos);
     void swap(int f1Id, int f2Id, Job *job1, Job *job2);
