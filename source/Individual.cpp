@@ -26,7 +26,7 @@ Individual::Individual(int n, int m, int F)
     this->V.resize(n);
     this->EC_f.resize(F);
     this->FT_f.resize(F);
-    this->job_allocation.resize(n);
+    this->jobAllocation.resize(n);
     this->p.resize(n);
 
     for (int i = 0; i < m; i++)
@@ -49,7 +49,7 @@ Individual::Individual(int n, int m, int F)
         this->V[i].resize(m);
         this->p[i].resize(m);
 
-        this->job_allocation[i] = -1;
+        this->jobAllocation[i] = -1;
     }
 
     this->TEC = 0;
@@ -140,21 +140,22 @@ void Individual::incrementDominationCounter(int val)
     this->dominationCounter += val;
 }
 
-Factory *Individual::getFactory(int f_id)
+Factory *Individual::getFactory(int factoryId)
 {
-    return this->factories[f_id];
+    return this->factories[factoryId];
 }
 
-void Individual::setV(int job_id, int mach_id, float v)
+void Individual::setV(int jobId, int machineId, float v)
 {
-    this->V[job_id][mach_id] = v;
+    this->V[jobId][machineId] = v;
+
 }
 
-void Individual::replaceFactory(int f_id, Factory *factory)
+void Individual::replaceFactory(int factoryId, Factory *factory)
 {
-    //this->factories[f_id]->clearJobs();
-    delete this->factories[f_id];
-    this->factories[f_id] = factory;
+    //this->factories[factoryId]->clearJobs();
+    delete this->factories[factoryId];
+    this->factories[factoryId] = factory;
 }
 
 bool Individual::dominates(Individual *other)
@@ -207,20 +208,20 @@ void Individual::insert(int fromFactoryId, int toFactoryId, Job *job, int pos)
     this->factories[toFactoryId]->insertJobAtPos(job, pos);
 }
 
-void Individual::swap(int f1_id, int f2_id, Job *job1, Job *job2)
+void Individual::swap(int f1Id, int f2Id, Job *job1, Job *job2)
 {
     if(job1->getId() == job2->getId()){
         return;
     }
 
-    int pos1 = this->factories[f1_id]->getJobPosAtSeq(job1->getId());
-    int pos2 = this->factories[f2_id]->getJobPosAtSeq(job2->getId());
+    int pos1 = this->factories[f1Id]->getJobPosAtSeq(job1->getId());
+    int pos2 = this->factories[f2Id]->getJobPosAtSeq(job2->getId());
 
-    this->factories[f1_id]->removeJob(job1->getId());
-    this->factories[f2_id]->removeJob(job2->getId());
+    this->factories[f1Id]->removeJob(job1->getId());
+    this->factories[f2Id]->removeJob(job2->getId());
 
-    this->factories[f1_id]->insertJobAtPos(job2, pos1);
-    this->factories[f2_id]->insertJobAtPos(job1, pos2);
+    this->factories[f1Id]->insertJobAtPos(job2, pos1);
+    this->factories[f2Id]->insertJobAtPos(job1, pos2);
 }
 
 int Individual::getNumFactories() {
@@ -229,4 +230,27 @@ int Individual::getNumFactories() {
 
 vector<Factory*> Individual::getFactories(){
     return this->factories;
+}
+
+vector<vector<float>> Individual::getAllV(){
+    return this->V;
+}
+
+void Individual::updateAllV(vector<vector<float>> newV){
+    this->V = newV;
+    
+    // Update each job of each factory
+    for(Factory* f: this->factories){
+        vector<Job*> jobs = f->getJobs();
+
+        for(Job* n: jobs){
+            n->setV(this->V[n->getId()]);
+        }
+
+        // Reinitialize jobs start times in the factory
+        f->initializeJobsStartTimes();
+
+        // Inform factory that TFT and TEC need to be recalculated
+        f->setTECTFTChanged();
+    }
 }

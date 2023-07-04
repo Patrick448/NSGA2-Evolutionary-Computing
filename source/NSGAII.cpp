@@ -1048,7 +1048,18 @@ vector<Individual *> NSGAII::makeChildren(int seed)
             // Choose a random individual from the chosen front
             int parent2 = rand() % this->dominationFronts[frontIndex].size();
 
-            // Crossover this->population: // TODO
+            // Crossover parents: // TODO
+            Individual *child1 = new Individual(this->population[parent1]);
+            Individual *child2 = new Individual(this->population[parent2]);
+
+            vector<vector<float>> parent1Speeds = this->population[parent1]->getAllV();
+            vector<vector<float>> parent2Speeds = this->population[parent2]->getAllV();
+
+            child1->updateAllV(parent2Speeds);
+            child2->updateAllV(parent1Speeds);
+
+            children.push_back(child1);
+            children.push_back(child2);
         }
     }
 
@@ -1749,7 +1760,7 @@ Individual *NSGAII::INGM_V2(Individual *individual, int seed)
                 {
                     this->updateArchive(auxNewIndividual);
                 }
-                
+
                 // Delete the auxNewIndividual
                 delete auxNewIndividual;
             }

@@ -6,12 +6,12 @@ Factory::Factory(Factory *f)
 {
     this->id = f->id;
     // vector<Job *> jobs;
-    this->total_jobs = f->total_jobs;
+    this->totalJobs = f->totalJobs;
     this->TEC = f->TEC;
     this->TFT = f->TFT;
     this->m = f->m;
     // static vector<float> speeds;
-    this->jobs_start_times_initialized = f->jobs_start_times_initialized;
+    this->jobsStartTimeInitialized = f->jobsStartTimeInitialized;
 
     this->jobs.reserve(f->jobs.size());
     for (int i = 0; i < f->jobs.size(); i++)
@@ -27,29 +27,29 @@ Factory::Factory(int id, int m)
 {
     this->id = id;
     this->m = m;
-    this->total_jobs = 0;
+    this->totalJobs = 0;
     this->TEC = 0.0;
     this->TFT = 0.0;
-    this->jobs_start_times_initialized = false;
+    this->jobsStartTimeInitialized = false;
     this->TECChanged = true;
     this->TFTChanged = true;
 }
 
 Factory::~Factory()
 {
-   // for(int i=0; i< this->jobs.size(); i++){
-   //     delete jobs[i];
-   // }
+    // for(int i=0; i< this->jobs.size(); i++){
+    //     delete jobs[i];
+    // }
 }
 
-void Factory::clearJobs(){
+void Factory::clearJobs()
+{
     this->jobs.clear();
 }
 
 void Factory::setSpeeds(vector<float> s)
 {
     Factory::speeds = s;
-
 }
 
 vector<Job *> Factory::getJobs()
@@ -70,16 +70,17 @@ int Factory::getJobPosAtSeq(int jobId)
 
 int Factory::getTotalJobs()
 {
-    return this->total_jobs;
+    return this->totalJobs;
 }
 
 float Factory::getTEC()
 {
-    if(!this->TECChanged){
+    if (!this->TECChanged)
+    {
         return this->TEC;
     }
 
-    if (!this->jobs_start_times_initialized)
+    if (!this->jobsStartTimeInitialized)
     {
         float tec = 0.0;
 
@@ -95,53 +96,53 @@ float Factory::getTEC()
         // Get the energy consumption of the standby times of each machine
         for (int i = 1; i < this->jobs.size(); i++)
         {
-            float job_time = 0.0;
-            float prev_job_time = 0.0;
+            float jobTime = 0.0;
+            float prevJobTime = 0.0;
 
             // Get the processing time on the first machine
             for (int j = 0; j < i; j++)
             {
-                prev_job_time += this->jobs[j]->getP(0);
+                prevJobTime += this->jobs[j]->getP(0);
             }
-            job_time = prev_job_time + this->jobs[i]->getP(0);
+            jobTime = prevJobTime + this->jobs[i]->getP(0);
 
             for (int j = 1; j < this->m; j++)
             {
                 // Check if standby time between jobs is greater than 0
-                prev_job_time += this->jobs[i - 1]->getP(j);
-                if (prev_job_time < job_time)
+                prevJobTime += this->jobs[i - 1]->getP(j);
+                if (prevJobTime < jobTime)
                 {
                     // Get the standby time
-                    tec += job_time - prev_job_time;
-                    job_time += this->jobs[i]->getP(j);
+                    tec += jobTime - prevJobTime;
+                    jobTime += this->jobs[i]->getP(j);
                 }
                 else
                 {
-                    job_time += prev_job_time + this->jobs[i]->getP(j);
+                    jobTime += prevJobTime + this->jobs[i]->getP(j);
                 }
             }
         }
         this->TEC = tec;
-        //return tec;
+        // return tec;
     }
-    else {
+    else
+    {
         this->TEC = this->getTECAfterStartTimesSet();
-        //return this->getTECAfterStartTimesSet();
+        // return this->getTECAfterStartTimesSet();
     }
 
     this->TECChanged = false;
     return this->TEC;
-
 }
 
 float Factory::getTFT()
 {
-    if(!this->TFTChanged){
+    if (!this->TFTChanged)
+    {
         return this->TFT;
     }
 
-
-    if (!this->jobs_start_times_initialized)
+    if (!this->jobsStartTimeInitialized)
     {
         float tft = 0.0;
         vector<float> partialFTByJob(this->jobs.size(), 0.0);
@@ -166,14 +167,14 @@ float Factory::getTFT()
         {
             tft += partialFTByJob[i];
         }
-        this->TFT =tft;
-        //return tft;
+        this->TFT = tft;
+        // return tft;
     }
     else
     {
-        this->TFT =this->getTFTAfterStartTimesSet();
+        this->TFT = this->getTFTAfterStartTimesSet();
 
-        //return this->getTFTAfterStartTimesSet();
+        // return this->getTFTAfterStartTimesSet();
     }
     this->TFTChanged = false;
     return this->TFT;
@@ -236,7 +237,7 @@ Factory *Factory::minTFTAfterInsertion(Job *job)
         testJobs = this->jobs;
         testJobs.insert(testJobs.begin() + i, job);
         testFactory->setJobs(testJobs);
-        //float testFactoryTFT = this->getTFTTest(testJobs);
+        // float testFactoryTFT = this->getTFTTest(testJobs);
         float testFactoryTFT = testFactory->getTFT();
 
         tftVariation = testFactoryTFT - tftBeforeInsertion;
@@ -247,7 +248,7 @@ Factory *Factory::minTFTAfterInsertion(Job *job)
         }
     }
 
-    //testFactory->jobs = minTFTJobs;
+    // testFactory->jobs = minTFTJobs;
     testFactory->setJobs(minTFTJobs);
     return testFactory;
 }
@@ -279,13 +280,13 @@ Factory *Factory::minTECAfterInsertion(Job *job)
             minIncreaseTEC = tecVariation;
             minTECJobs = testJobs;
         }
-        //auxFactory->clearJobs();
+        // auxFactory->clearJobs();
         delete auxFactory;
     }
 
     Factory *testFactory = new Factory();
     *testFactory = *this;
-    //testFactory->jobs = minTECJobs;
+    // testFactory->jobs = minTECJobs;
     testFactory->setJobs(minTECJobs);
 
     return testFactory;
@@ -304,8 +305,7 @@ void Factory::addJobAtLastPosition(Job *job)
     }
 
     this->jobs.push_back(job);
-    this->total_jobs++;
-
+    this->totalJobs++;
 }
 
 void Factory::addJobAtPosition(Job *job, int pos)
@@ -320,9 +320,7 @@ void Factory::addJobAtPosition(Job *job, int pos)
             return;
     }
     this->jobs.insert(this->jobs.begin() + pos, job);
-    this->total_jobs++;
-
-
+    this->totalJobs++;
 }
 
 int auxFindIndex(vector<float> v, float element)
@@ -358,13 +356,13 @@ void Factory::speedDown()
             for (int v = indexPreviousSpeed; v > 1; v--)
             {
                 newSpeed = Factory::speeds[v - 1];
-                //job->setVForMachine(j, newSpeed); // diminui para a próxima velocidade
+                // job->setVForMachine(j, newSpeed); // diminui para a próxima velocidade
                 this->setVForJobMachine(i, j, newSpeed);
                 newTFT = this->getTFT();
 
                 if (newTFT > previousTFT)
                 {
-                    //job->setVForMachine(j, previousSpeed); // retorna à velocidade anterior
+                    // job->setVForMachine(j, previousSpeed); // retorna à velocidade anterior
                     this->setVForJobMachine(i, j, previousSpeed);
                     break;
                 }
@@ -395,9 +393,10 @@ void Factory::randSpeedDown(int seed)
         {
             float previousSpeed = job->getV(j);
             int indexPreviousSpeed = auxFindIndex(Factory::speeds, previousSpeed);
-            if(indexPreviousSpeed>0){
+            if (indexPreviousSpeed > 0)
+            {
                 int indexNewSpeed = rand.next() % indexPreviousSpeed;
-               // job->setVForMachine(j, Factory::speeds[indexNewSpeed]);
+                // job->setVForMachine(j, Factory::speeds[indexNewSpeed]);
                 this->setVForJobMachine(i, j, Factory::speeds[indexNewSpeed]);
             }
         }
@@ -422,25 +421,29 @@ void Factory::setMachines(int m)
 void Factory::initializeJobsStartTimes()
 {
     // The first job of the sequence starts at time 0 and it's executed with no standby time on the other machines
-    float global_sum = 0.0;
-    float individual_sum = 0.0;
+    float globalSum = 0.0;
+    float individualSum = 0.0;
     for (int i = 0; i < this->jobs.size(); i++)
     {
         for (int j = 0; j < this->m; j++)
         {
             if (i > 0)
-                if (this->jobs[i - 1]->getStartTime(j) + this->jobs[i - 1]->getP(j) > individual_sum)
-                    individual_sum = this->jobs[i - 1]->getStartTime(j) + this->jobs[i - 1]->getP(j);
+            {
+                if (this->jobs[i - 1]->getStartTime(j) + this->jobs[i - 1]->getP(j) > individualSum)
+                {
+                    individualSum = this->jobs[i - 1]->getStartTime(j) + this->jobs[i - 1]->getP(j);
+                }
+            }
 
-            this->jobs[i]->setStartTime(j, individual_sum);
-            individual_sum += this->jobs[i]->getP(j);
+            this->jobs[i]->setStartTime(j, individualSum);
+            individualSum += this->jobs[i]->getP(j);
         }
 
         // Update variables
-        global_sum += this->jobs[i]->getP(0);
-        individual_sum = global_sum;
+        globalSum += this->jobs[i]->getP(0);
+        individualSum = globalSum;
     }
-    this->jobs_start_times_initialized = true;
+    this->jobsStartTimeInitialized = true;
 }
 
 void Factory::rightShift()
@@ -483,7 +486,7 @@ void Factory::rightShift()
 
 float Factory::getTECAfterStartTimesSet()
 {
-    if (this->jobs_start_times_initialized)
+    if (this->jobsStartTimeInitialized)
     {
         float tec = 0.0;
 
@@ -517,34 +520,42 @@ void Factory::speedUp()
     int critical_jobId = this->jobs.size() - 1;
 
     // if factory has more than one job
-    if(this->getNumJobs() > 1) {
+    if (this->getNumJobs() > 1)
+    {
         float minIdleTime = INFINITY;
         int minIdleTimeMachine = -1;
 
         // Find where is the smallest idle time between the critical job and its predecessor
-        for (int j = 1; j < this->m; j++) {
+        for (int j = 1; j < this->m; j++)
+        {
             float idleTime = this->jobs[critical_jobId]->getStartTime(j) -
-                              (this->jobs[critical_jobId - 1]->getStartTime(j) +
-                               this->jobs[critical_jobId - 1]->getP(j));
-            if (idleTime < minIdleTime && idleTime > 0) {
+                             (this->jobs[critical_jobId - 1]->getStartTime(j) +
+                              this->jobs[critical_jobId - 1]->getP(j));
+            if (idleTime < minIdleTime && idleTime > 0)
+            {
                 minIdleTime = idleTime;
                 minIdleTimeMachine = j;
             }
         }
 
         // Speed up the critical job to the maximum possible speed without overlapping the next machine start time
-        if (minIdleTimeMachine != -1) {
+        if (minIdleTimeMachine != -1)
+        {
             int j = 0;
-            while (j < minIdleTimeMachine) {
+            while (j < minIdleTimeMachine)
+            {
                 float speed = this->jobs[critical_jobId]->getV(j);
 
                 // If the job isnt at the maximum speed, speed it up and left shift the critical job on the following machines
-                if (speed < this->speeds[this->speeds.size() - 1]) {
+                if (speed < this->speeds[this->speeds.size() - 1])
+                {
                     float new_speed = this->speeds[0];
 
                     // Select the new speed. Will be the closest higher speed to the current one
-                    for (int s = 0; s < this->speeds.size(); s++) {
-                        if (speed == this->speeds[s]) {
+                    for (int s = 0; s < this->speeds.size(); s++)
+                    {
+                        if (speed == this->speeds[s])
+                        {
                             new_speed = this->speeds[s + 1];
                             break;
                         }
@@ -557,12 +568,14 @@ void Factory::speedUp()
 
                     float reduction = actual_job_p - new_job_p;
 
-                    if (reduction <= minIdleTime) {
+                    if (reduction <= minIdleTime)
+                    {
                         // Speed up the job
                         this->jobs[critical_jobId]->setVForMachine(j, new_speed);
 
                         // Left shift the critical job on the following machines
-                        for (int k = j + 1; k < this->m; k++) {
+                        for (int k = j + 1; k < this->m; k++)
+                        {
                             float new_start_time = this->jobs[critical_jobId]->getStartTime(k) - reduction;
                             this->jobs[critical_jobId]->setStartTime(k, new_start_time);
                         }
@@ -582,18 +595,22 @@ void Factory::speedUp()
         // First try the first machine
         int j = 0;
 
-        while(j < this->m) {
+        while (j < this->m)
+        {
 
             float speed = this->jobs[critical_jobId]->getV(j);
 
             // If the job isnt at the maximum speed, speed it up and left shift the critical job on the following machines
-            if (speed < this->speeds.back()) {
+            if (speed < this->speeds.back())
+            {
 
                 float new_speed = this->speeds[0];
 
                 // Select the new speed. Will be the closest higher speed to the current one
-                for (int s = 0; s < this->speeds.size(); s++) {
-                    if (speed == this->speeds[s]) {
+                for (int s = 0; s < this->speeds.size(); s++)
+                {
+                    if (speed == this->speeds[s])
+                    {
                         new_speed = this->speeds[s + 1];
                         break;
                     }
@@ -606,7 +623,8 @@ void Factory::speedUp()
                 float reduction = actual_job_p - new_job_p;
 
                 // Left shift the critical job on the following machines
-                for (int k = j + 1; k < this->m; k++) {
+                for (int k = j + 1; k < this->m; k++)
+                {
                     float new_start_time = this->jobs[critical_jobId]->getStartTime(k) - reduction;
                     this->jobs[critical_jobId]->setStartTime(k, new_start_time);
                 }
@@ -620,7 +638,6 @@ void Factory::speedUp()
     }
     this->TECChanged = true;
     this->TFTChanged = true;
-
 }
 
 void Factory::randSpeedUp(int seed)
@@ -634,34 +651,42 @@ void Factory::randSpeedUp(int seed)
         jobId = rand.next() % this->jobs.size();
     } while (jobId == 0);
 
-    if(this->getNumJobs() > 1) {
+    if (this->getNumJobs() > 1)
+    {
         float minIdleTime = INFINITY;
         int minIdleTimeMachine = -1;
 
         // Find where is the smallest idle time between the critical job and its predecessor
-        for (int j = 1; j < this->m; j++) {
+        for (int j = 1; j < this->m; j++)
+        {
             float idleTime = this->jobs[jobId]->getStartTime(j) -
-                              (this->jobs[jobId - 1]->getStartTime(j) + this->jobs[jobId - 1]->getP(j));
+                             (this->jobs[jobId - 1]->getStartTime(j) + this->jobs[jobId - 1]->getP(j));
 
-            if (idleTime < minIdleTime && idleTime > 0) {
+            if (idleTime < minIdleTime && idleTime > 0)
+            {
                 minIdleTime = idleTime;
                 minIdleTimeMachine = j;
             }
         }
 
         // Speed up the critical job to the maximum possible speed without overlapping the next machine start time
-        if (minIdleTimeMachine != -1) {
+        if (minIdleTimeMachine != -1)
+        {
             int j = 0;
-            while (j < minIdleTimeMachine) {
+            while (j < minIdleTimeMachine)
+            {
                 float speed = this->jobs[jobId]->getV(j);
 
                 // If the job isnt at the maximum speed for the machine, speed it up and left shift the criticaç job on the following machines
-                if (speed < this->speeds[this->speeds.size() - 1]) {
+                if (speed < this->speeds[this->speeds.size() - 1])
+                {
                     float new_speed;
 
                     // Select the new speed. Will be the closest higher speed to the current one
-                    for (int s = 0; s < this->speeds.size(); s++) {
-                        if (speed == this->speeds[s]) {
+                    for (int s = 0; s < this->speeds.size(); s++)
+                    {
+                        if (speed == this->speeds[s])
+                        {
                             new_speed = this->speeds[s + 1];
                             break;
                         }
@@ -674,18 +699,21 @@ void Factory::randSpeedUp(int seed)
 
                     float reduction = actual_job_p - new_job_p;
 
-                    if (reduction <= minIdleTime) {
+                    if (reduction <= minIdleTime)
+                    {
                         // Speed up the job
                         this->jobs[jobId]->setVForMachine(j, new_speed);
 
                         // Left shift the critical job and its predecessors on the following machines
-                        for (int k = j + 1; k < this->m; k++) {
+                        for (int k = j + 1; k < this->m; k++)
+                        {
 
                             float new_start_time = this->jobs[jobId]->getStartTime(k) - reduction;
                             this->jobs[jobId]->setStartTime(k, new_start_time);
                             if (jobId != this->jobs.back()->getId())
                             {
-                                for (int i = jobId+1; i < this->jobs.size(); ++i) {
+                                for (int i = jobId + 1; i < this->jobs.size(); ++i)
+                                {
                                     new_start_time = this->jobs[i]->getStartTime(k) - reduction;
                                     this->jobs[i]->setStartTime(k, new_start_time);
                                 }
@@ -706,18 +734,22 @@ void Factory::randSpeedUp(int seed)
         // First try the first machine
         int j = 0;
 
-        while(j < this->m) {
+        while (j < this->m)
+        {
 
             float speed = this->jobs[jobId]->getV(j);
 
             // If the job isnt at the maximum speed, speed it up and left shift the critical job on the following machines
-            if (speed < this->speeds.back()) {
+            if (speed < this->speeds.back())
+            {
 
                 float new_speed = this->speeds[0];
 
                 // Select the new speed. Will be the closest higher speed to the current one
-                for (int s = 0; s < this->speeds.size(); s++) {
-                    if (speed == this->speeds[s]) {
+                for (int s = 0; s < this->speeds.size(); s++)
+                {
+                    if (speed == this->speeds[s])
+                    {
                         new_speed = this->speeds[s + 1];
                         break;
                     }
@@ -730,10 +762,10 @@ void Factory::randSpeedUp(int seed)
                 float reduction = actual_job_p - new_job_p;
 
                 // Left shift the critical job on the following machines
-                for (int k = j + 1; k < this->m; k++) {
+                for (int k = j + 1; k < this->m; k++)
+                {
                     float new_start_time = this->jobs[jobId]->getStartTime(k) - reduction;
                     this->jobs[jobId]->setStartTime(k, new_start_time);
-
                 }
                 this->TECChanged = true;
                 this->TFTChanged = true;
@@ -791,8 +823,6 @@ void Factory::insertJobAtPos(Job *job, int pos)
                     job->setStartTime(j, this->jobs[index]->getStartTime(j) + this->jobs[index]->getP(j));
             }
         }
-
-
     }
     else
     {
@@ -884,13 +914,15 @@ Job *Factory::getJob(int id)
     return this->jobs[id];
 }
 
-void Factory::setTECTFTChanged(){
-    this->TECChanged =true;
-    this->TFTChanged=true;
+void Factory::setTECTFTChanged()
+{
+    this->TECChanged = true;
+    this->TFTChanged = true;
 }
 
-void Factory::setVForJobMachine(int job, int machine, float speed){
+void Factory::setVForJobMachine(int job, int machine, float speed)
+{
     this->jobs[job]->setVForMachine(machine, speed);
-    this->TECChanged =true;
-    this->TFTChanged=true;
+    this->TECChanged = true;
+    this->TFTChanged = true;
 }

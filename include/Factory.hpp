@@ -9,14 +9,14 @@ class Factory
 private:
     int id;               // Factory index
     vector<Job *> jobs;   // List of jobs assigned to the factory
-    vector<int> jobs_ids; // Jobs assigned to the factory
-    vector<int> jobs_seq; // Jobs sequence ---- não está sendo usado
-    int total_jobs;       // Total number of jobs assigned to the factory
+    vector<int> jobsIds; // Jobs assigned to the factory
+    vector<int> jobsSeq; // Jobs sequence ---- não está sendo usado
+    int totalJobs;       // Total number of jobs assigned to the factory
     float TEC;            // Total energy consumption of the factory
     float TFT;            // Total flow time of the factory
     int m;                // Number of machines
     static vector<float> speeds;
-    bool jobs_start_times_initialized;
+    bool jobsStartTimeInitialized;
     bool TFTChanged = true;
     bool TECChanged = true;
 

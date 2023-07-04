@@ -14,7 +14,7 @@ private:
     float TFT;                        // Total flow time
     vector<float> EC_f;               // Energy consumption of each factory
     vector<float> FT_f;               // Flow time of each factory
-    vector<int> job_allocation;       // Factory id of each job
+    vector<int> jobAllocation;       // Factory id of each job
     vector<Factory *> factories;
     int n;
     int m;
@@ -33,25 +33,26 @@ public:
     Individual(Individual* sol);
     ~Individual();
 
-    vector<vector<int>> getDistribution();
-    vector<vector<float>> getV();
+    vector<vector<int>> getDistribution();  // not implemented
+    vector<vector<float>> getV();           // not implemented
     float getTEC();
     float getTFT();
-    float getTFTUsingMatrix();
-    vector<int> getAllJobsAllocation();
-    int getJobAllocation(int job_id);
-    Factory *getFactory(int f_id);
+    float getTFTUsingMatrix();              
+    vector<int> getAllJobsAllocation();     // not implemented
+    int getJobAllocation(int jobId);       // not implemented
+    Factory *getFactory(int factoryId);          // not implemented    
     int getNumFactories();
 
     bool dominates(Individual *other); // true if this instance dominates other
     bool crowdedCompare(Individual *other);
 
-    void replaceFactory(int f_id, Factory *factory);
-    void setSequence(int f_id, vector<int> seq);
-    void setV(int job_id, int mach_id, float v);
-    void setEC_f(int f_id, float ec);
-    void setFT_f(int f_id, float ft);
-    void setJobAllocation(int job_id, int f_id);
+    void replaceFactory(int factoryId, Factory *factory);
+    void setSequence(int factoryId, vector<int> seq);    // not implemented
+    void setV(int jobId, int machineId, float v);    
+    void setEC_f(int factoryId, float ec);               // not implemented
+    void setFT_f(int factoryId, float ft);               // not implemented
+    void setJobAllocation(int jobId, int factoryId);    // not implemented
+
     void setDominationRank(int val);
     int getDominationRank();
     void setDominationCounter(int val);
@@ -63,16 +64,21 @@ public:
     vector<Factory*> getFactories();
 
     // Operators
-    void speedUp(int f_id);
-    void randSpeedUp(int f_id);
-    void speedDown(int f_id);
-    void randSpeedDown(int f_id);
-    void rightShift(int f_id);
-    void insert(int from_f_id, int to_f_id, Job *job, int pos);
-    void swap(int f1_id, int f2_id, Job *job1, Job *job2);
+    void speedUp(int factoryId);                     // not implemented
+    void randSpeedUp(int factoryId);                 // not implemented
+    void speedDown(int factoryId);                   // not implemented
+    void randSpeedDown(int factoryId);               // not implemented
+    void rightShift(int factoryId);                  // not implemented
+
+    void insert(int fromFactoryId, int toFactoryId, Job *job, int pos);
+    void swap(int f1Id, int f2Id, Job *job1, Job *job2);
 
     // Auxiliar functions
     void printIndividual();
+
+    // New methods for crossover
+    vector<vector<float>> getAllV();
+    void updateAllV(vector<vector<float>> newV);
 };
 
 #endif // Individual_HPP

@@ -8,13 +8,13 @@ class Job
 {
 private:
     int id;          // Job index
-    int factory_id;  // Factory index
+    int factoryId;  // Factory index
     int position;    // Position in processing flow
     vector<int> t;   // Standard processing time of operation on each machine j
     vector<float> v; // Processing speed of this job on each machine
     float C;         // Completion time
     int m;           // Number of machines
-    vector<float> start_times; // Start time on each machine
+    vector<float> startTimes; // Start time on each machine
 
 public:
     Job(int id, int m); // Constructor (id = job index, m = number of machines

@@ -11,7 +11,6 @@ private:
     Problem *problem;
 
     vector<Individual *> population; // Population of Individuals
-    vector<Individual *> new_individuals;
     vector<Individual *> paretoArchive;
     vector<vector<Individual *>> dominationFronts;
 

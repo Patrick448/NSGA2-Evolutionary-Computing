@@ -34,10 +34,13 @@ int main()
     cout << "m = " << instance->getM() << endl;
 
     // Build NSGA-II
-    NSGAII nsgaii = NSGAII(instance);
+    float crossoverProbability = 0.9;
+    float mutationProbability = 0.8;
+    NSGAII nsgaii = NSGAII(instance, crossoverProbability, mutationProbability);
 
     // Run NSGA-II
-    nsgaii.run();
+    int seed = 0;
+    nsgaii.run(seed);
 
     cout << "\nFIM\n";
 

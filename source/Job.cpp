@@ -2,13 +2,13 @@
 
 Job::Job(Job *j) {
     this->id = j->id;
-    this->factory_id = j->factory_id;
+    this->factoryId = j->factoryId;
     //this->position = j->position;
     this->t = j->t;
     this->v = j->v;
     this->C = j->C;
     this->m = j->m;
-    this->start_times = j->start_times;
+    this->startTimes = j->startTimes;
 }
 
 Job::Job(int id, int m)
@@ -16,7 +16,7 @@ Job::Job(int id, int m)
     this->id = id;
     this->t.resize(m);
     this->v.resize(m);
-    this->start_times.resize(m);
+    this->startTimes.resize(m);
 }
 
 int Job::getId()
@@ -55,15 +55,15 @@ float Job::getT_j(int j)
 
 void Job::setStartTime(int j, float start_time)
 {
-    this->start_times[j] = start_time;
+    this->startTimes[j] = start_time;
 }
 
 float Job::getStartTime(int j)
 {
-    return this->start_times[j];
+    return this->startTimes[j];
 }
 
 vector<float> Job::getStartTimes()
 {
-    return this->start_times;
+    return this->startTimes;
 }
