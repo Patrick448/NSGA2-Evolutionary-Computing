@@ -1658,7 +1658,6 @@ Individual *NSGAII::INGM(Individual *individual, int seed)
 Individual *NSGAII::INGM_V2(Individual *individual, int seed)
 {
     Xoshiro256plus rand(seed);
-    Individual *newIndividual = new Individual(individual);
 
     // Randomly choose the objective for optimization
     int randomObjective = rand.next() % 2; // 0 = TFT, 1 = TEC
@@ -1671,7 +1670,7 @@ Individual *NSGAII::INGM_V2(Individual *individual, int seed)
     {
         for (int f = 0; f < this->problem->getF(); f++)
         {
-            float fTFT = newIndividual->getFactory(f)->getTFT();
+            float fTFT = individual->getFactory(f)->getTFT();
             if (fTFT > largestFactory)
             {
                 largestFactory = fTFT;
@@ -1683,7 +1682,7 @@ Individual *NSGAII::INGM_V2(Individual *individual, int seed)
     {
         for (int f = 0; f < this->problem->getF(); f++)
         {
-            float fTEC = newIndividual->getFactory(f)->getTEC();
+            float fTEC = individual->getFactory(f)->getTEC();
             if (fTEC > largestFactory)
             {
                 largestFactory = fTEC;
@@ -1692,8 +1691,8 @@ Individual *NSGAII::INGM_V2(Individual *individual, int seed)
         }
     }
 
-    vector<Job *> jobsToTry = newIndividual->getFactory(largestFactoryIndex)->getJobs();
-    int largestFactoryFactoryTotalJobs = newIndividual->getFactory(largestFactoryIndex)->getNumJobs();
+    vector<Job *> jobsToTry = individual->getFactory(largestFactoryIndex)->getJobs();
+    int largestFactoryFactoryTotalJobs = individual->getFactory(largestFactoryIndex)->getNumJobs();
 
     while (jobsToTry.size() > largestFactoryFactoryTotalJobs / 2)
     {
@@ -1705,10 +1704,10 @@ Individual *NSGAII::INGM_V2(Individual *individual, int seed)
         // Try inserting the job to every position of every factory until the individual dominates the original one
         for (int f = 0; f < this->problem->getF(); f++)
         {
-            int factoryNumJobs = newIndividual->getFactory(f)->getNumJobs();
+            int factoryNumJobs = individual->getFactory(f)->getNumJobs();
             for (int pos = 0; pos < factoryNumJobs; pos++)
             {
-                Individual *auxNewIndividual = new Individual(newIndividual);
+                Individual *auxNewIndividual = new Individual(individual);
 
                 // Insert the job to the factory
                 auxNewIndividual->insert(largestFactoryIndex, f, job, pos);
@@ -1744,12 +1743,13 @@ Individual *NSGAII::INGM_V2(Individual *individual, int seed)
                 {
                     return auxNewIndividual;
                 }
-                else if (auxNewIndividual->getTFT() < individual->getTFT() ||
-                         auxNewIndividual->getTEC() < individual->getTEC())
-                {
 
+                // If auxNewIndividual doesn't dominate the parent individual, then update the archive
+                else
+                {
                     this->updateArchive(auxNewIndividual);
                 }
+                
                 // Delete the auxNewIndividual
                 delete auxNewIndividual;
             }
