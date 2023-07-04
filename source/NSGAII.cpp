@@ -2040,6 +2040,7 @@ void NSGAII::run(int seed) {
 
     //
     int counter = 0;
+    start = clock();
     while (true) {
         end = clock();
         double time_taken = double(end - start) / double(CLOCKS_PER_SEC);
@@ -2048,7 +2049,6 @@ void NSGAII::run(int seed) {
             cout << "Time's up! " << counter << " iterations in " << time_taken << " seconds" << endl;
             break;
         }
-
 
         this->NSGA2NextGeneration(counter + seed);
         counter++;
