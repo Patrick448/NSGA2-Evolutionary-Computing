@@ -3,4 +3,4 @@ cmake-build-debug
 analysis/__pycache__/helpers.cpython-310.pyc
 build
 *.csv
-exp/*
+/analysis/exp/*
