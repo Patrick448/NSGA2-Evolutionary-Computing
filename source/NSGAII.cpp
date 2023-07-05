@@ -880,27 +880,29 @@ vector<Individual *> NSGAII::makeChildren(int seed) {
     vector<Individual *> children;
 
     // Crossover
-    /* for (int i = 0; i < this->population.size(); i++) {
+     for (int i = 0; i < this->population.size(); i++) {
         float probability = (float) rand() / (float) RAND_MAX;
 
         // If probability is less than crossover rate, then crossover
         if (probability < this->crossoverRate) {
             // One parent is the current parent
-            int parent1 = i;
+            int parent1Index = i;
 
             // Choose from what front the other parent will be using a roulette wheel
-
             int frontIndex = roulette(this->dominationFronts, seed);
 
             // Choose a random individual from the chosen front
-            int parent2 = rand() % this->dominationFronts[frontIndex].size();
+            int parent2Index = rand() % this->dominationFronts[frontIndex].size();
+
+            Individual* parent1 = this->population[parent1Index];
+            Individual* parent2 = this->dominationFronts[frontIndex][parent2Index];
 
             // Crossover parents: // TODO
-            Individual *child1 = new Individual(this->population[parent1]);
-            Individual *child2 = new Individual(this->population[parent2]);
+            Individual *child1 = new Individual(parent1);
+            Individual *child2 = new Individual(parent2);
 
-            vector<vector<float>> parent1Speeds = this->population[parent1]->getAllV();
-            vector<vector<float>> parent2Speeds = this->population[parent2]->getAllV();
+            vector<vector<float>> parent1Speeds = parent1->getAllV();
+            vector<vector<float>> parent2Speeds = parent2->getAllV();
 
             child1->updateAllV(parent2Speeds);
             child2->updateAllV(parent1Speeds);
@@ -908,27 +910,27 @@ vector<Individual *> NSGAII::makeChildren(int seed) {
             children.push_back(child1);
             children.push_back(child2);
         }
-    } */
+    }
 
     // Mutation
-    for (int i = 0; i < this->population.size(); i++) {
-        // float probability = (float) rand() / (float) RAND_MAX;
+   for (int i = 0; i < this->population.size(); i++) {
+         /* float probability = (float) rand() / (float) RAND_MAX;
 
-        // // If probability is less than mutation rate, then mutate
-        // if (probability < this->mutationRate) {
-        //     // TODO: é preciso lembrar se o INGM está mesmo funcionando
-        //     // children.push_back(this->INGM(this->population[i], seed));
-        //     // Eu acredito que poderíamos deixar o híbrido ao invés de só INGM
+        // If probability is less than mutation rate, then mutate
+         if (probability < this->mutationRate) {
+             // TODO: é preciso lembrar se o INGM está mesmo funcionando
+             // children.push_back(this->INGM(this->population[i], seed));
+             // Eu acredito que poderíamos deixar o híbrido ao invés de só INGM
 
-        //     // Criei uma nova função INGM chamada INGM_V2 que é uma versão que acredito estar mais correta do que
-        //     // a implementação anterior e talvez não fique demorando tanto para achar uma solução que domine o pai
-        //     Individual *child = this->INGM_V2(this->population[i], rand() % RAND_MAX);
+             // Criei uma nova função INGM chamada INGM_V2 que é uma versão que acredito estar mais correta do que
+             // a implementação anterior e talvez não fique demorando tanto para achar uma solução que domine o pai
+             Individual *child = this->INGM_V2(this->population[i], rand() % RAND_MAX);
 
-        //     if (child != nullptr) {
-        //         children.push_back(child);
-        //     }
-        // }
-        Individual *child = this->INGM_V2(this->population[i], rand() % RAND_MAX);
+             if (child != nullptr) {
+                 children.push_back(child);
+             }
+         }*/
+        Individual *child = this->INGM_ND(this->population[i], rand());
         if (child != nullptr) {
             children.push_back(child);
         }
