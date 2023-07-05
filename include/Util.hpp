@@ -33,7 +33,7 @@ public:
     static float meanDMetric(vector<vector<Individual*>> &paretoArchive, vector<Individual*> &PF);
     static vector<Individual*> joinFronts(vector<vector<Individual*>> fronts);
     static void outputToFile(string path, string text, bool append);
-
+    static void checkDuplicateIndividualsAtFile(string path);
 
 
     };

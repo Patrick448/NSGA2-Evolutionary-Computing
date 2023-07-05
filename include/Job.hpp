@@ -21,8 +21,9 @@ public:
     Job(Job* j);
     ~Job(){};
 
-    float getP(int j); // Get actual processing time of this job on machine j
-    float getV(int j); // Get actual processing speed of this job on machine j
+    float getP(int j);          // Get actual processing time of this job on machine j
+    float getV(int j);          // Get actual processing speed of this job on machine j
+    vector<float> getAllV();    // Get actual processing speed of this job on all machines
     float getTotalP();
     int getId();
     int getFactoryId();

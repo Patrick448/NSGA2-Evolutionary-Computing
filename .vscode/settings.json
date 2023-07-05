@@ -1,16 +1,17 @@
 {
-    "files.associations": {
-        "deque": "cpp",
-        "string": "cpp",
-        "vector": "cpp",
-        "*.ipp": "cpp",
-        "*.tcc": "cpp",
-        "future": "cpp",
-        "istream": "cpp",
-        "mutex": "cpp",
-        "ostream": "cpp",
-        "stop_token": "cpp",
-        "typeinfo": "cpp",
-        "tuple": "cpp"
-    }
+  "files.associations": {
+    "deque": "cpp",
+    "string": "cpp",
+    "vector": "cpp",
+    "*.ipp": "cpp",
+    "*.tcc": "cpp",
+    "future": "cpp",
+    "istream": "cpp",
+    "mutex": "cpp",
+    "ostream": "cpp",
+    "stop_token": "cpp",
+    "typeinfo": "cpp",
+    "tuple": "cpp",
+    "iostream": "cpp"
+  }
 }

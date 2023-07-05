@@ -43,6 +43,11 @@ float Job::getV(int j)
     return this->v[j];
 }
 
+vector<float> Job::getAllV()
+{
+    return this->v;
+}
+
 void Job::setVForMachine(int j, float v)
 {
     this->v[j] = v;

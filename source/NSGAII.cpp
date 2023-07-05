@@ -2045,11 +2045,23 @@ void NSGAII::run(int seed) {
     this->assignCrowdingDistance();
 
     if (this->outputEnabled) {
+        // If directory ../analysis/exp/ does not exist, create it
+        struct stat buffer;
+        if (stat("../analysis/exp/", &buffer) != 0)
+        {
+            string createDirName = "mkdir ../analysis/exp/";
+            system(createDirName.c_str());
+        }
+        
+        // Clear and create directory ../analysis/exp/seed/
+        string clearCreateDirName = "rm -rf ../analysis/exp/"+to_string(seed)+" && mkdir ../analysis/exp/"+to_string(seed);
+        system(clearCreateDirName.c_str());
+
         Util::outputToFile("../analysis/exp/"+to_string(seed) + "/after_0.csv", this->generatePopulationCSVString(), false);
     }
 
-    //
     int counter = 0;
+    string experimentDir = "../analysis/exp/"+to_string(seed);
     start = clock();
     while (true) {
         end = clock();
@@ -2064,11 +2076,12 @@ void NSGAII::run(int seed) {
         counter++;
 
         if (this->outputEnabled) {
-            Util::outputToFile("../analysis/exp/"+to_string(seed) + "/after_" + to_string(counter) + ".csv",
-                               this->generatePopulationCSVString(), false);
+            Util::outputToFile(experimentDir + "/after_" + to_string(counter) + ".csv", this->generatePopulationCSVString(), false);
         }
-
     }
+
+    // Check duplicates at last iteration file
+    Util::checkDuplicateIndividualsAtFile(experimentDir + "/after_" + to_string(counter) + ".csv");
 
     this->fastNonDominatedSort();
 

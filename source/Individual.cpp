@@ -233,17 +233,32 @@ vector<Factory*> Individual::getFactories(){
 }
 
 vector<vector<float>> Individual::getAllV(){
-    return this->V;
+    vector<vector<float>> allV;
+
+    // Iterate over jobs to get their V
+    for(Factory* f: this->factories)
+    {
+        vector<Job*> jobs = f->getJobs();
+
+        for(Job* n: jobs)
+        {
+            allV.push_back(n->getAllV());
+        }
+    }
+
+    return allV;
 }
 
 void Individual::updateAllV(vector<vector<float>> newV){
     this->V = newV;
     
     // Update each job of each factory
-    for(Factory* f: this->factories){
+    for(Factory* f: this->factories)
+    {
         vector<Job*> jobs = f->getJobs();
 
-        for(Job* n: jobs){
+        for(Job* n: jobs)
+        {
             n->setV(this->V[n->getId()]);
         }
 

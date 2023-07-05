@@ -10,7 +10,7 @@ int main()
     cout << "Hello" << endl;
 
     cout << "Iniciando leitura da instância...\n" << endl;
-    Problem *instance = readFile("../instances/294/3-4-20__15.txt");
+    Problem *instance = readFile("../instances/294/3-4-20__75.txt");
     cout << "Instância lida com sucesso!\n" << endl;
 
     cout << "F = " << instance->getF() << endl;

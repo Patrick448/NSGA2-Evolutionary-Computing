@@ -60,7 +60,6 @@ public:
     void printIndividual();
 
     // New methods for crossover
-
     vector<vector<float>> getAllV();
     void updateAllV(vector<vector<float>> newV);
 };

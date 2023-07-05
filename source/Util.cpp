@@ -372,3 +372,43 @@ float Util::meanIGDMetric(vector<vector<Individual*>> &paretoArchive, vector<Ind
 
     return sum/paretoArchive.size();
 }
+
+void Util::checkDuplicateIndividualsAtFile(string path)
+{
+    // Read file
+    ifstream file(path);
+    string str;
+    vector<string> lines;
+    while (getline(file, str))
+    {
+        lines.push_back(str);
+    }
+    file.close();
+
+    // Check duplicates ignoring the first column
+    vector<string> uniqueLines;
+    bool duplicateFound = false;
+    cout << "\nAnalyzing " << path << "... " << endl;
+    for (int i = 0; i < lines.size(); i++)
+    {
+        bool isUnique = true;
+        for (int j = 0; j < uniqueLines.size(); j++)
+        {
+            if (lines[i].substr(lines[i].find(",") + 1) == uniqueLines[j].substr(uniqueLines[j].find(",") + 1))
+            {
+                cout << "Duplicate found: " << uniqueLines[j] << " == " << lines[i] << endl;
+                isUnique = false;
+                duplicateFound = true;
+                break;
+            }
+        }
+        if (isUnique)
+        {
+            uniqueLines.push_back(lines[i]);
+        }
+    }
+    if (!duplicateFound)
+    {
+        cout << "No duplicates found at " << path << endl;
+    }
+}

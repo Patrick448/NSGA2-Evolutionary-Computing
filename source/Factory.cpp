@@ -66,6 +66,8 @@ int Factory::getJobPosAtSeq(int jobId)
             return i;
         }
     }
+
+    return -1;
 }
 
 int Factory::getTotalJobs()
