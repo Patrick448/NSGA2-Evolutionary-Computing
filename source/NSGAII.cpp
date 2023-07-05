@@ -396,12 +396,6 @@ Individual *NSGAII::balancedRandomIndividualGenerator(int s) {
         // Erase the allocated job from the list
         jobsToAllocate.erase(jobsToAllocate.begin() + randomNum);
         factoryId++;
-
-        // Time control
-        // gettimeofday(&this->end, 0);
-        // long seconds = this->end.tv_sec - this->begin.tv_sec;
-        // if (seconds > this->problem->getN()/2)
-        //    return;
     }
 
     // Initialize the of each factory

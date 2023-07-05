@@ -263,7 +263,7 @@ void Individual::updateAllV(vector<vector<float>> newV){
         }
 
         // Reinitialize jobs start times in the factory
-        // f->initializeJobsStartTimes();
+        f->initializeJobsStartTimes();
 
         // Inform factory that TFT and TEC need to be recalculated
         f->setTECTFTChanged();
