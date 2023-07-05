@@ -18,7 +18,7 @@ int main()
     cout << "m = " << instance->getM() << endl;
 
     // Build NSGA-II
-    float crossoverProbability = 0.9;
+    float crossoverProbability = 0.0;
     float mutationProbability = 0.8;
     NSGAII nsgaii = NSGAII(instance, crossoverProbability, mutationProbability);
     nsgaii.setOutputEnabled(true);

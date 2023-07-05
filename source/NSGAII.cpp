@@ -907,6 +907,7 @@ vector<Individual *> NSGAII::makeChildren(int seed) {
             child1->updateAllV(parent2Speeds);
             child2->updateAllV(parent1Speeds);
 
+
             children.push_back(child1);
             children.push_back(child2);
         }
@@ -2043,25 +2044,33 @@ void NSGAII::run(int seed) {
 
     // Assign crowding distance to individuals to facilitate the selection process
     this->assignCrowdingDistance();
+    string experimentDir = "../analysis/exp/"+to_string(seed);
+    string experimentCSVDir = "../analysis/exp/"+to_string(seed)+"/csv";
 
     if (this->outputEnabled) {
         // If directory ../analysis/exp/ does not exist, create it
         struct stat buffer;
-        if (stat("../analysis/exp/", &buffer) != 0)
+        if (stat(experimentDir.c_str(), &buffer) != 0)
         {
-            string createDirName = "mkdir ../analysis/exp/";
+            string createDirName = "mkdir " + experimentDir;
+            system(createDirName.c_str());
+        }
+
+        if (stat(experimentCSVDir.c_str(), &buffer) != 0)
+        {
+            string createDirName = "mkdir " + experimentCSVDir;
             system(createDirName.c_str());
         }
         
         // Clear and create directory ../analysis/exp/seed/
-        string clearCreateDirName = "rm -rf ../analysis/exp/"+to_string(seed)+" && mkdir ../analysis/exp/"+to_string(seed);
+        string clearCreateDirName = "rm -rf "+experimentCSVDir+" && mkdir " + experimentCSVDir;
         system(clearCreateDirName.c_str());
 
-        Util::outputToFile("../analysis/exp/"+to_string(seed) + "/after_0.csv", this->generatePopulationCSVString(), false);
+        Util::outputToFile(experimentCSVDir + "/after_0.csv", this->generatePopulationCSVString(), false);
     }
 
     int counter = 0;
-    string experimentDir = "../analysis/exp/"+to_string(seed);
+
     start = clock();
     while (true) {
         end = clock();
@@ -2076,12 +2085,12 @@ void NSGAII::run(int seed) {
         counter++;
 
         if (this->outputEnabled) {
-            Util::outputToFile(experimentDir + "/after_" + to_string(counter) + ".csv", this->generatePopulationCSVString(), false);
+            Util::outputToFile(experimentCSVDir + "/after_" + to_string(counter) + ".csv", this->generatePopulationCSVString(), false);
         }
     }
 
     // Check duplicates at last iteration file
-    Util::checkDuplicateIndividualsAtFile(experimentDir + "/after_" + to_string(counter) + ".csv");
+    Util::checkDuplicateIndividualsAtFile(experimentCSVDir + "/after_" + to_string(counter) + ".csv");
 
     this->fastNonDominatedSort();
 

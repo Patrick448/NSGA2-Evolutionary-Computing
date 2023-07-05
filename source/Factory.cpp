@@ -874,6 +874,7 @@ void Factory::insertJobAtPos(Job *job, int pos)
     this->TECChanged = true;
     this->TFTChanged = true;
 }
+
 string Factory::generateCSV()
 {
     this->initializeJobsStartTimes();
