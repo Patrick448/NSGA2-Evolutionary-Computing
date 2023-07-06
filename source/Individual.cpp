@@ -198,6 +198,10 @@ void Individual::insert(int fromFactoryId, int toFactoryId, Job *job, int pos)
 {
     this->factories[fromFactoryId]->removeJob(job->getId());
     this->factories[toFactoryId]->insertJobAtPos(job, pos);
+
+    // Reinitialize the start times
+    this->factories[fromFactoryId]->initializeJobsStartTimes();
+    this->factories[toFactoryId]->initializeJobsStartTimes();
 }
 
 void Individual::swap(int f1Id, int f2Id, Job *job1, Job *job2)

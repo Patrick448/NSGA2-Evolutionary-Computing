@@ -186,6 +186,7 @@ Individual *NSGAII::maxSMinTFT() {
 
                 // Insert the job in the position pos of the factory f
                 twinIndividual->getFactory(f)->addJobAtPosition(job, pos);
+                twinIndividual->getFactory(f)->initializeJobsStartTimes();
 
                 // Calculate the TFT increase
                 float tftIncrease = twinIndividual->getTFT() - individual->getTFT();
@@ -202,6 +203,7 @@ Individual *NSGAII::maxSMinTFT() {
 
         // Insert the job in the position of the factory that leads to the minimum increase of total flow time
         individual->getFactory(minTFTFactoryId)->addJobAtPosition(job, minTFTFactoryPos);
+        individual->getFactory(minTFTFactoryId)->initializeJobsStartTimes();
     }
 
     // 4th: initialize the start_times of each factory and then speed down
@@ -414,6 +416,10 @@ Individual *NSGAII::minSMinTEC()
                 // Insert the job in the position pos of the factory f
                 twinIndividual->getFactory(f)->addJobAtPosition(job, pos);
 
+                // Initialize the start_times
+                twinIndividual->getFactory(f)->initializeJobsStartTimes();
+                
+
                 // Calculate the TEC increase
                 float tecIncrease = twinIndividual->getTEC() - individual->getTEC();
 
@@ -429,6 +435,7 @@ Individual *NSGAII::minSMinTEC()
 
         // Insert the job in the position of the factory that leads to the minimum increase of total energy consumption
         individual->getFactory(minTECFactoryId)->addJobAtPosition(job, minTECFactoryPos);
+        individual->getFactory(minTECFactoryId)->initializeJobsStartTimes();
     }
 
     // 4th: initialize the start_times of each factory and then right shift
@@ -1879,16 +1886,16 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed) {
         jobsToTry.erase(jobsToTry.begin() + randomJobIndex);
 
         // Change the origin factory
-        if (randomObjective == 0) // Optimize TFT
+        /* if (randomObjective == 0) // Optimize TFT
         {
-            newIndividual->getFactory(largestFactoryIndex)->randSpeedUp(seed);
-            newIndividual->getFactory(largestFactoryIndex)->speedUp();
+            // newIndividual->getFactory(largestFactoryIndex)->randSpeedUp(seed);
+            // newIndividual->getFactory(largestFactoryIndex)->speedUp();
         } else // Optimize TEC
         {
-            newIndividual->getFactory(largestFactoryIndex)->randSpeedDown(seed);
-            newIndividual->getFactory(largestFactoryIndex)->speedDown();
-            newIndividual->getFactory(largestFactoryIndex)->rightShift();
-        }
+            // newIndividual->getFactory(largestFactoryIndex)->randSpeedDown(seed);
+            // newIndividual->getFactory(largestFactoryIndex)->speedDown();
+            // newIndividual->getFactory(largestFactoryIndex)->rightShift();
+        } */
 
         // Try inserting the job to every position of every factory until the individual dominates the original one
         for (int f = 0; f < this->problem->getF(); f++) {
@@ -1900,10 +1907,17 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed) {
                 // Change the factory
                 if (randomObjective == 0) // Optimize TFT
                 {
+                    newIndividual->getFactory(largestFactoryIndex)->randSpeedUp(seed);
+                    newIndividual->getFactory(largestFactoryIndex)->speedUp();
+
                     newIndividual->getFactory(f)->randSpeedUp(seed);
                     newIndividual->getFactory(f)->speedUp();
                 } else // Optimize TEC
                 {
+                    newIndividual->getFactory(largestFactoryIndex)->randSpeedDown(seed);
+                    newIndividual->getFactory(largestFactoryIndex)->speedDown();
+                    newIndividual->getFactory(largestFactoryIndex)->rightShift();
+
                     newIndividual->getFactory(f)->randSpeedDown(seed);
                     newIndividual->getFactory(f)->speedDown();
                     newIndividual->getFactory(f)->rightShift();
