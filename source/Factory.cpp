@@ -125,12 +125,10 @@ float Factory::getTEC()
             }
         }
         this->TEC = tec;
-        // return tec;
     }
     else
     {
         this->TEC = this->getTECAfterStartTimesSet();
-        // return this->getTECAfterStartTimesSet();
     }
 
     this->TECChanged = false;
@@ -170,13 +168,10 @@ float Factory::getTFT()
             tft += partialFTByJob[i];
         }
         this->TFT = tft;
-        // return tft;
     }
     else
     {
         this->TFT = this->getTFTAfterStartTimesSet();
-
-        // return this->getTFTAfterStartTimesSet();
     }
     this->TFTChanged = false;
     return this->TFT;
@@ -321,7 +316,16 @@ void Factory::addJobAtPosition(Job *job, int pos)
         if (this->jobs[i]->getId() == job->getId())
             return;
     }
-    this->jobs.insert(this->jobs.begin() + pos, job);
+
+    // If position is greater than the number of jobs, add at last position
+    if (pos >= this->jobs.size())
+    {
+        this->jobs.push_back(job);
+    }
+    else
+    {
+        this->jobs.insert(this->jobs.begin() + pos, job);
+    }
     this->totalJobs++;
 }
 

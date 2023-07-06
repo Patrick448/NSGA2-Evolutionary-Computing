@@ -2,7 +2,6 @@
 #include "Util.hpp"
 
 Individual::Individual(Individual *sol) {
-    this->V = sol->V;
     //this->EC_f = sol->EC_f;
     //this->FT_f = sol->FT_f;
     this->n = sol->n;
@@ -23,7 +22,6 @@ Individual::Individual(int n, int m, int F)
     this->m = m;
 
     this->distribution.resize(F);
-    this->V.resize(n);
     this->EC_f.resize(F);
     this->FT_f.resize(F);
     this->jobAllocation.resize(n);
@@ -46,7 +44,6 @@ Individual::Individual(int n, int m, int F)
 
     for (int i = 0; i < n; i++)
     {
-        this->V[i].resize(m);
         this->p[i].resize(m);
 
         this->jobAllocation[i] = -1;
@@ -75,13 +72,13 @@ Individual::~Individual()
 
 float Individual::getTEC()
 {
-    float tft = 0.0;
+    float tec = 0.0;
     for (int i = 0; i < this->factories.size(); i++)
     {
-        tft += this->factories[i]->getTEC();
+        tec += this->factories[i]->getTEC();
     }
 
-    return tft;
+    return tec;
 }
 
 float Individual::getTFT()
@@ -145,11 +142,6 @@ Factory *Individual::getFactory(int factoryId)
     return this->factories[factoryId];
 }
 
-void Individual::setV(int jobId, int machineId, float v)
-{
-    this->V[jobId][machineId] = v;
-
-}
 
 void Individual::replaceFactory(int factoryId, Factory *factory)
 {
@@ -250,7 +242,6 @@ vector<vector<float>> Individual::getAllV(){
 }
 
 void Individual::updateAllV(vector<vector<float>> newV){
-    this->V = newV;
     
     // Update each job of each factory
     for(Factory* f: this->factories)
@@ -259,7 +250,7 @@ void Individual::updateAllV(vector<vector<float>> newV){
 
         for(Job* n: jobs)
         {
-            n->setV(this->V[n->getId()]);
+            n->setV(newV[n->getId()]);
         }
 
         // Reinitialize jobs start times in the factory

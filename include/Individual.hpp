@@ -9,7 +9,6 @@ class Individual
 {
 private:
     vector<vector<int>> distribution; // Sequence of jobs in each factory
-    vector<vector<float>> V;          // Speed matrix of each job in each machine
     float TEC;                        // Total energy consumption
     float TFT;                        // Total flow time
     vector<float> EC_f;               // Energy consumption of each factory
@@ -42,7 +41,6 @@ public:
     bool crowdedCompare(Individual *other);
 
     void replaceFactory(int factoryId, Factory *factory);
-    void setV(int jobId, int machineId, float v);
     void setDominationRank(int val);
     int getDominationRank();
     void setDominationCounter(int val);

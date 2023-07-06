@@ -53,7 +53,7 @@ void NSGAII::construtivo() {
 }
 
 bool compareJobsByTotalProcessingTime(Job *a, Job *b) {
-    return a->getTotalP() < b->getTotalP();
+    return a->getTotalP() > b->getTotalP();
 }
 
 bool compareIndividualsByTFT(Individual *a, Individual *b) {
@@ -65,72 +65,150 @@ bool compareIndividualsByTEC(Individual *a, Individual *b) {
 }
 
 Individual *NSGAII::maxSMinTFT() {
-    Individual *individual = new Individual(this->problem->getN(), this->problem->getM(), this->problem->getF());
-    vector<Job *> jobs(this->problem->getN());
-    int highestSpeed = this->problem->getAllSpeeds().size() - 1;
+    // Individual *individual = new Individual(this->problem->getN(), this->problem->getM(), this->problem->getF());
+    // vector<Job *> jobs(this->problem->getN());
+    // int highestSpeed = this->problem->getAllSpeeds().size() - 1;
 
+    // for (int i = 0; i < this->problem->getN(); i++) {
+    //     jobs[i] = new Job(i, this->problem->getM());
+    //     vector<int> jobTimeByMachine(this->problem->getM());
+    //     vector<float> jobSpeedByMachine(this->problem->getM());
+
+    //     for (int j = 0; j < this->problem->getM(); j++) {
+    //         jobTimeByMachine[j] = this->problem->getAllT()[i][j];
+    //         jobSpeedByMachine[j] = this->problem->getAllSpeeds()[highestSpeed];
+    //     }
+    //     jobs[i]->setT(jobTimeByMachine);
+    //     jobs[i]->setV(jobSpeedByMachine);
+    // }
+
+    // // NEH procedure
+    // // generate job permutation lambda according to DESCENDING order of Ti (total job i processing time)
+    // sort(jobs.begin(), jobs.end(), compareJobsByTotalProcessingTime); 
+
+    // // assign the first f jobs to each one of the factories
+    // for (int i = 0; i < this->problem->getF(); i++) { 
+    //     // factories[i] = new Factory(i, this->problem->get_m());
+    //     individual->getFactory(i)->addJobAtLastPosition(jobs[i]);
+    // }
+
+    // // remove the assigned jobs from lambda
+    // Factory *testFactory;
+    // float testFactoryTFT;
+    // float tftVariation;
+    // float previousTFT;
+    // Factory *minTFTFactory;
+
+    // // for each factory f
+    // // test job j at all the possible positions of PI_k (the factory)
+    // for (int j = this->problem->getF(); j < jobs.size(); j++) { 
+    //     float minIncreaseTFT = INFINITY;
+    //     float minTFTPos = 0;
+
+    //     for (int f = 0; f < this->problem->getF(); f++) {
+    //         testFactory = individual->getFactory(f)->minTFTAfterInsertion(jobs[j]);
+    //         testFactoryTFT = testFactory->getTFT();
+    //         previousTFT = individual->getFactory(f)->getTFT();
+    //         tftVariation = testFactoryTFT - previousTFT;
+
+    //         if (tftVariation < minIncreaseTFT) {
+    //             minIncreaseTFT = tftVariation;
+    //             minTFTFactory = testFactory;
+    //             minTFTPos = f;
+    //         } else {
+    //             // testFactory->clearJobs();
+    //             delete testFactory;
+    //         }
+    //     }
+
+    //     // factories[minTFTPos] = minTFTFactory;
+    //     individual->replaceFactory(minTFTPos, minTFTFactory); // replaces old factory and deletes it
+    // }
+
+    // for (int i = 0; i < this->problem->getF(); i++) {
+    //     individual->getFactory(i)->speedDown();
+    // }
+
+    // // Initialize the jobs start times of each factory
+    // for (int f = 0; f < this->problem->getF(); f++) {
+    //     individual->getFactory(f)->initializeJobsStartTimes();
+    // }
+
+    // return individual;
+
+    // New version
+    // 1st: all the jobs are processed at the maximum speed
+
+    // Empty jobs vector
+    vector<Job *> jobs(this->problem->getN());
+
+    // Set all the speeds to the maximum value
+    int highestSpeed = this->problem->getAllSpeeds().size() - 1;
     for (int i = 0; i < this->problem->getN(); i++) {
         jobs[i] = new Job(i, this->problem->getM());
         vector<int> jobTimeByMachine(this->problem->getM());
         vector<float> jobSpeedByMachine(this->problem->getM());
 
+        // Iterate over all the machines
         for (int j = 0; j < this->problem->getM(); j++) {
             jobTimeByMachine[j] = this->problem->getAllT()[i][j];
             jobSpeedByMachine[j] = this->problem->getAllSpeeds()[highestSpeed];
         }
+
+        // Set the standard time and speed of the job
         jobs[i]->setT(jobTimeByMachine);
         jobs[i]->setV(jobSpeedByMachine);
     }
 
-    sort(jobs.begin(), jobs.end(),
-         compareJobsByTotalProcessingTime); // generate job permutation lambda according to non-descending order of Ti (total job i processing time)
+    // 2nd: sort the jobs according to DESCENDING order of total processing time (NEH procedure)
+    sort(jobs.begin(), jobs.end(), compareJobsByTotalProcessingTime);
 
-    for (int i = 0; i < this->problem->getF(); i++) { // assign the first f jobs to each one of the factories
-        // factories[i] = new Factory(i, this->problem->get_m());
-        individual->getFactory(i)->addJobAtLastPosition(jobs[i]);
-    }
+    // 3rd: take the jobs out one by one and insert them in the position of the factory that leads to the minimum increase of total flow time
+    Individual *individual = new Individual(this->problem->getN(), this->problem->getM(), this->problem->getF());
+    for(int i = 0; i < jobs.size(); i++)
+    {
+        // Get the job
+        Job *job = jobs[i];
 
-    // remove the assigned jobs from lambda
+        // Auxiliary variables
+        float minTFTIncrease = INFINITY;
+        int minTFTFactoryId = -1;
+        int minTFTFactoryPos = -1;
 
-    Factory *testFactory;
-    float testFactoryTFT;
-    float tftVariation;
-    float previousTFT;
-    Factory *minTFTFactory;
+        // Iterate over all the factories
+        for(int f = 0; f < this->problem->getF(); f++)
+        {
+            int possiblePositions = individual->getFactory(f)->getJobs().size() + 1; // +1 because the job can be inserted at the end of the sequence
+            for(int pos = 0; pos < possiblePositions; pos++)
+            {
+                // Create a twin individual to test the insertion
+                Individual *twinIndividual = new Individual(individual);
 
-    // for each factory f
-    for (int j = this->problem->getF();
-         j < jobs.size(); j++) { // test job j at all the possible positions of PI_k (the factory)
-        float minIncreaseTFT = INFINITY;
-        float minTFTPos = 0;
+                // Insert the job in the position pos of the factory f
+                twinIndividual->getFactory(f)->addJobAtPosition(job, pos);
 
-        for (int f = 0; f < this->problem->getF(); f++) {
-            testFactory = individual->getFactory(f)->minTFTAfterInsertion(jobs[j]);
-            testFactoryTFT = testFactory->getTFT();
-            previousTFT = individual->getFactory(f)->getTFT();
-            tftVariation = testFactoryTFT - previousTFT;
+                // Calculate the TFT increase
+                float tftIncrease = twinIndividual->getTFT() - individual->getTFT();
 
-            if (tftVariation < minIncreaseTFT) {
-                minIncreaseTFT = tftVariation;
-                minTFTFactory = testFactory;
-                minTFTPos = f;
-            } else {
-                // testFactory->clearJobs();
-                delete testFactory;
+                // If the TFT increase is the minimum, update the auxiliary variables
+                if(tftIncrease < minTFTIncrease)
+                {
+                    minTFTIncrease = tftIncrease;
+                    minTFTFactoryId = f;
+                    minTFTFactoryPos = pos;
+                }
             }
         }
 
-        // factories[minTFTPos] = minTFTFactory;
-        individual->replaceFactory(minTFTPos, minTFTFactory); // replaces old factory and deletes it
+        // Insert the job in the position of the factory that leads to the minimum increase of total flow time
+        individual->getFactory(minTFTFactoryId)->addJobAtPosition(job, minTFTFactoryPos);
     }
 
-    for (int i = 0; i < this->problem->getF(); i++) {
-        individual->getFactory(i)->speedDown();
-    }
-
-    // Initialize the jobs start times of each factory
-    for (int f = 0; f < this->problem->getF(); f++) {
+    // 4th: initialize the start_times of each factory and then speed down
+    for (int f = 0; f < this->problem->getF(); f++)
+    {
         individual->getFactory(f)->initializeJobsStartTimes();
+        individual->getFactory(f)->speedDown();
     }
 
     return individual;
@@ -212,69 +290,150 @@ Individual *NSGAII::randSMinTFT(int seed) {
     return individual;
 }
 
-Individual *NSGAII::minSMinTEC() {
-    Individual *individual = new Individual(this->problem->getN(), this->problem->getM(), this->problem->getF());
+Individual *NSGAII::minSMinTEC()
+{
+    // Individual *individual = new Individual(this->problem->getN(), this->problem->getM(), this->problem->getF());
+    // vector<Job *> jobs(this->problem->getN());
+
+    // // First, all the speeds set to the minimum value
+    // for (int i = 0; i < this->problem->getN(); i++) {
+    //     jobs[i] = new Job(i, this->problem->getM());
+    //     vector<int> jobTimeByMachine(this->problem->getM());
+    //     vector<float> jobSpeedByMachine(this->problem->getM());
+
+    //     for (int j = 0; j < this->problem->getM(); j++) {
+    //         jobTimeByMachine[j] = this->problem->getAllT()[i][j];
+    //         jobSpeedByMachine[j] = this->problem->getAllSpeeds()[0]; // minimum speed
+    //     }
+    //     jobs[i]->setT(jobTimeByMachine);
+    //     jobs[i]->setV(jobSpeedByMachine);
+    // }
+
+    // // Sort the jobs according to DESCENDING order of total processing time
+    // // NEH procedure
+    // sort(jobs.begin(), jobs.end(), compareJobsByTotalProcessingTime);
+
+    // // Assign the first f jobs to each one of the factories
+    // for (int k = 0; k < this->problem->getF(); k++)
+    // {
+    //     individual->getFactory(k)->addJobAtLastPosition(jobs[k]);
+    // }
+
+    // // Remove the assigned jobs from lambda = access the jobs vector from the f position to the end
+    // // Insert remaining jobs in the position of the factory that can lead to the minimum increse of total energy consumption
+    // Factory *testFactory;
+    // float testFactoryTEC;
+    // float tecVariation;
+    // float previousTEC;
+    // Factory *minTECFactory;
+
+    // // For each factory f
+    // for (int i = this->problem->getF(); i < jobs.size(); i++)
+    // {
+    //     float minIncreaseTEC = INFINITY;
+    //     float minTECPos = 0;
+
+    //     // Test job j at all the possible positions of PI_k (the factory)
+    //     for (int k = 0; k < this->problem->getF(); k++) {
+    //         testFactory = individual->getFactory(k)->minTECAfterInsertion(jobs[i]);
+    //         testFactoryTEC = testFactory->getTEC();
+    //         previousTEC = individual->getFactory(k)->getTEC();
+    //         tecVariation = testFactoryTEC - previousTEC;
+
+    //         if (tecVariation < minIncreaseTEC) {
+    //             minIncreaseTEC = tecVariation;
+    //             minTECFactory = testFactory;
+    //             minTECPos = k;
+    //         } else {
+    //             // testFactory->clearJobs();
+    //             delete testFactory;
+    //         }
+    //     }
+
+    //     // Add the job to the factory that leads to the minimum increase of total energy consumption
+    //     individual->replaceFactory(minTECPos, minTECFactory); // replaces old factory and deletes it
+    // }
+
+    // // Initialize the start_times of each factory and then right shift
+    // for (int f = 0; f < this->problem->getF(); f++)
+    // {
+    //     individual->getFactory(f)->initializeJobsStartTimes();
+    //     individual->getFactory(f)->rightShift();
+    // }
+
+    // return individual;
+
+    // New version
+    // 1st: all the jobs are processed at the minimum speed
+
+    // Empty jobs vector
     vector<Job *> jobs(this->problem->getN());
 
-    // First, all the speeds set to the minimum value
-    for (int i = 0; i < this->problem->getN(); i++) {
+    // Set all the speeds to the minimum value
+    for (int i = 0; i < this->problem->getN(); i++)
+    {
         jobs[i] = new Job(i, this->problem->getM());
         vector<int> jobTimeByMachine(this->problem->getM());
         vector<float> jobSpeedByMachine(this->problem->getM());
 
+        // Iterate over all the machines
         for (int j = 0; j < this->problem->getM(); j++) {
             jobTimeByMachine[j] = this->problem->getAllT()[i][j];
             jobSpeedByMachine[j] = this->problem->getAllSpeeds()[0]; // minimum speed
         }
+
+        // Set the standard time and speed of the job
         jobs[i]->setT(jobTimeByMachine);
         jobs[i]->setV(jobSpeedByMachine);
     }
 
-    // Sort the jobs according to non-descending order of total processing time
+    // 2nd: sort the jobs according to DESCENDING order of total processing time (NEH procedure)
     sort(jobs.begin(), jobs.end(), compareJobsByTotalProcessingTime);
 
-    // Assign the first f jobs to each one of the factories
-    for (int k = 0; k < this->problem->getF(); k++) {
-        individual->getFactory(k)->addJobAtLastPosition(jobs[k]);
-    }
+    // 3rd: take the jobs out one by one and insert them in the position of the factory that leads to the minimum increase of total energy consumption
+    Individual *individual = new Individual(this->problem->getN(), this->problem->getM(), this->problem->getF());
+    for(int i = 0; i < jobs.size(); i++)
+    {
+        // Get the job and make a vector of its tentatives
+        Job *job = jobs[i];
 
-    // Remove the assigned jobs from lambda = access the jobs vector from the f position to the end
+        // Auxiliary variables
+        float minTECIncrease = INFINITY;
+        int minTECFactoryId = -1;
+        int minTECFactoryPos = -1;
 
-    // Insert remaining jobs in the position of the factory that can lead to the minimum increse of total energy consumption
-    Factory *testFactory;
-    float testFactoryTEC;
-    float tecVariation;
-    float previousTEC;
-    Factory *minTECFactory;
+        // Iterate over all the factories
+        for(int f = 0; f < this->problem->getF(); f++)
+        {
+            int possiblePositions = individual->getFactory(f)->getJobs().size() + 1; // +1 because the job can be inserted at the end of the sequence
+            for(int pos = 0; pos < possiblePositions; pos++)
+            {
+                // Create a twin individual to test the insertion
+                Individual *twinIndividual = new Individual(individual);
 
-    // For each factory f
-    for (int i = this->problem->getF(); i < jobs.size(); i++) {
-        float minIncreaseTEC = INFINITY;
-        float minTECPos = 0;
+                // Insert the job in the position pos of the factory f
+                twinIndividual->getFactory(f)->addJobAtPosition(job, pos);
 
-        // Test job j at all the possible positions of PI_k (the factory)
-        for (int k = 0; k < this->problem->getF(); k++) {
-            testFactory = individual->getFactory(k)->minTECAfterInsertion(jobs[i]);
-            testFactoryTEC = testFactory->getTEC();
-            previousTEC = individual->getFactory(k)->getTEC();
-            tecVariation = testFactoryTEC - previousTEC;
+                // Calculate the TEC increase
+                float tecIncrease = twinIndividual->getTEC() - individual->getTEC();
 
-            if (tecVariation < minIncreaseTEC) {
-                minIncreaseTEC = tecVariation;
-                minTECFactory = testFactory;
-                minTECPos = k;
-            } else {
-                // testFactory->clearJobs();
-                delete testFactory;
+                // If the TEC increase is the minimum, update the auxiliary variables
+                if(tecIncrease < minTECIncrease)
+                {
+                    minTECIncrease = tecIncrease;
+                    minTECFactoryId = f;
+                    minTECFactoryPos = pos;
+                }
             }
         }
 
-        // Add the job to the factory that leads to the minimum increase of total energy consumption
-        individual->replaceFactory(minTECPos, minTECFactory); // replaces old factory and deletes it
+        // Insert the job in the position of the factory that leads to the minimum increase of total energy consumption
+        individual->getFactory(minTECFactoryId)->addJobAtPosition(job, minTECFactoryPos);
     }
 
-    // Initialize the start_times of each factory and then right shift
-    for (int f = 0; f < this->problem->getF(); f++) {
+    // 4th: initialize the start_times of each factory and then right shift
+    for (int f = 0; f < this->problem->getF(); f++)
+    {
         individual->getFactory(f)->initializeJobsStartTimes();
         individual->getFactory(f)->rightShift();
     }
@@ -378,7 +537,7 @@ Individual *NSGAII::balancedRandomIndividualGenerator(int s) {
         // Set a random speed for each machine
         for (int j = 0; j < this->problem->getM(); j++) {
             int randomNum = rand.next() % this->problem->getAllSpeeds().size();
-            individual->setV(job->getId(), j, this->problem->getAllSpeeds()[randomNum]);
+            // individual->setV(job->getId(), j, this->problem->getAllSpeeds()[randomNum]);
             job->setVForMachine(j, this->problem->getAllSpeeds()[randomNum]);
         }
 
@@ -428,7 +587,7 @@ Individual *NSGAII::totalRandomIndividualGenerator(int s) {
         // Set a random speed for each machine
         for (int j = 0; j < this->problem->getM(); j++) {
             int randomNum = rand.next() % this->problem->getAllSpeeds().size();
-            individual->setV(job->getId(), j, this->problem->getAllSpeeds()[randomNum]);
+            // individual->setV(job->getId(), j, this->problem->getAllSpeeds()[randomNum]);
             job->setVForMachine(j, this->problem->getAllSpeeds()[randomNum]);
         }
         individual->getFactory(i)->addJobAtLastPosition(job);
@@ -444,7 +603,7 @@ Individual *NSGAII::totalRandomIndividualGenerator(int s) {
         // Set a random speed for each machine
         for (int j = 0; j < this->problem->getM(); j++) {
             int randomNum = rand.next() % this->problem->getAllSpeeds().size();
-            individual->setV(job->getId(), j, this->problem->getAllSpeeds()[randomNum]);
+            // individual->setV(job->getId(), j, this->problem->getAllSpeeds()[randomNum]);
             job->setVForMachine(j, this->problem->getAllSpeeds()[randomNum]);
         }
 
