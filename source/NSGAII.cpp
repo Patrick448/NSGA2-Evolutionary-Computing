@@ -12,7 +12,7 @@ NSGAII::~NSGAII() {
 
     if (this->population.size() > 0) {
         for (int i = 0; i < this->population.size(); i++) {
-            delete this->population[i];
+            //delete this->population[i];
         }
     }
 }
@@ -2229,7 +2229,7 @@ void NSGAII::run(int seed) {
         end = clock();
         double time_taken = double(end - start) / double(CLOCKS_PER_SEC);
 
-        if (time_taken > this->problem->getN() / 2) {
+        if (time_taken > this->problem->getN() / 2 || counter >= 1000) {
             cout << "Time's up! " << counter << " iterations in " << time_taken << " seconds" << endl;
             break;
         }
@@ -2242,8 +2242,11 @@ void NSGAII::run(int seed) {
         }
     }
 
-    // Check duplicates at last iteration file
-    Util::checkDuplicateIndividualsAtFile(experimentCSVDir + "/after_" + to_string(counter) + ".csv");
+    if (this->outputEnabled) {
+        // Check duplicates at last iteration file
+        Util::checkDuplicateIndividualsAtFile(experimentCSVDir + "/after_" + to_string(counter) + ".csv");
+    }
+
 
     this->fastNonDominatedSort();
 
@@ -2251,8 +2254,15 @@ void NSGAII::run(int seed) {
     // for (Individual *i: this->getParetoFront()) {
     //     this->updateArchive(i);
     // }
+    this->numIterations = counter;
+
+   // Util::deallocate();
 }
 
 void NSGAII::setOutputEnabled(bool outputEnabled) {
     this->outputEnabled = outputEnabled;
+}
+
+int NSGAII::getNumIterations() {
+    return this->numIterations;
 }
