@@ -1152,7 +1152,7 @@ void NSGAII::NSGA2NextGeneration(int seed) {
         nextGen.insert(nextGen.end(), fronts[l].begin(), fronts[l].end());
     }*/
 
-    int lastIndIndex;
+    int lastIndIndex=fronts[l].size()-1;
     if (nextGen.size() < n) {
         // nextGen.reserve(n);
         sort(fronts[l].begin(), fronts[l].end(), crowdedCompare);
@@ -1162,16 +1162,16 @@ void NSGAII::NSGA2NextGeneration(int seed) {
         }
     }
 
-    int count = 0;
+    //int count = 0;
     for(int j=lastIndIndex+1; j<fronts[l].size(); j++){
         delete fronts[l][j];
-        count ++;
+        //count ++;
     }
 
     for(int i=l+1; i<fronts.size(); i++){
         for(int j=0; j<fronts[i].size(); j++){
             delete fronts[i][j];
-            count ++;
+            //count ++;
         }
     }
 
