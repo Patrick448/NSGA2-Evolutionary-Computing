@@ -18,20 +18,21 @@ vector<T*> joinFronts(vector<vector<T*>> fronts){
     return result;
 }
 
-vector<vector<Individual*>> runAlgorithmGetAchives(string path, int iterations, int baseSeed, int &totalIterations, float crossoverProbability, float mutationProbability){
+vector<vector<MinimalIndividual*>> runAlgorithmGetAchives(string path, int iterations, int baseSeed, int &totalIterations, float crossoverProbability, float mutationProbability){
 
     //string csv = "id,baseSeed,iterations,nsgaIterations,N,D(antiga), GD, IGD, S\n";
     string csv = "";
-    vector<vector<Individual*>> paretoArchive;
+    vector<vector<MinimalIndividual*>> paretoArchive;
 
     int nsgaIterationsSum = 0;
     Problem *instance = readFile(path);
+
 
     for(int i=0; i<iterations; i++){
         NSGAII nsgaii = NSGAII(instance, crossoverProbability, mutationProbability);
         nsgaii.run(baseSeed+i);
         nsgaIterationsSum += nsgaii.getNumIterations();
-        paretoArchive.push_back(nsgaii.getParetoFront());
+        paretoArchive.push_back(nsgaii.getMinimalParetoFront());
     }
 
     delete instance;
@@ -41,7 +42,7 @@ vector<vector<Individual*>> runAlgorithmGetAchives(string path, int iterations, 
 
 }
 
-string algorithmCSV(string path, string alg, int baseSeed, int nsgaIterationsSum, int iterations, int N, vector<Individual*> trueParetoFront, vector<vector<Individual*>> algParetoArchive){
+string algorithmCSV(string path, string alg, int baseSeed, int nsgaIterationsSum, int iterations, int N, vector<MinimalIndividual*> trueParetoFront, vector<vector<MinimalIndividual*>> algParetoArchive){
     return path + ","+alg +"," + to_string(baseSeed)
            + "," + to_string(iterations)
            + "," + to_string((float)nsgaIterationsSum/(float)iterations)
@@ -53,13 +54,19 @@ string algorithmCSV(string path, string alg, int baseSeed, int nsgaIterationsSum
            + "\n";
 }
 
+void deallocateMinimalIndivduals(vector<MinimalIndividual*> individuals){
+    for(int i=0; i<individuals.size(); i++){
+        delete individuals[i];
+    }
+}
+
 string runExperiment(string path, int iterations,int baseSeed){
     string csv = "";
 
-    vector<vector<Individual*>> alg1ParetoFronts;
-    vector<vector<Individual*>> alg2ParetoFronts;
-    vector<vector<Individual*>> alg3ParetoFronts;
-    vector<vector<Individual*>> alg4ParetoFronts;
+    vector<vector<MinimalIndividual*>> alg1ParetoFronts;
+    vector<vector<MinimalIndividual*>> alg2ParetoFronts;
+    vector<vector<MinimalIndividual*>> alg3ParetoFronts;
+    vector<vector<MinimalIndividual*>> alg4ParetoFronts;
 
     int alg1Its=0;
     alg1ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg1Its, 0.2, 0.8);
@@ -70,21 +77,21 @@ string runExperiment(string path, int iterations,int baseSeed){
     int alg4Its=0;
     alg4ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg4Its, 0.2, 0.8);
 
-    vector<Individual*> alg1UnifiedParetoArchive = joinFronts(alg1ParetoFronts);
-    vector<vector<Individual*>> alg1FirstFront = Util::fastNonDominatedSort(alg1UnifiedParetoArchive);
+    vector<MinimalIndividual*> alg1UnifiedParetoArchive = joinFronts(alg1ParetoFronts);
+    vector<vector<MinimalIndividual*>> alg1FirstFront = Util::fastNonDominatedSort(alg1UnifiedParetoArchive);
 
-    vector<Individual*> alg2UnifiedParetoArchive = joinFronts(alg2ParetoFronts);
-    vector<vector<Individual*>> alg2FirstFront = Util::fastNonDominatedSort(alg2UnifiedParetoArchive);
+    vector<MinimalIndividual*> alg2UnifiedParetoArchive = joinFronts(alg2ParetoFronts);
+    vector<vector<MinimalIndividual*>> alg2FirstFront = Util::fastNonDominatedSort(alg2UnifiedParetoArchive);
 
-    vector<Individual*> alg3UnifiedParetoArchive = joinFronts(alg3ParetoFronts);
-    vector<vector<Individual*>> alg3FirstFront = Util::fastNonDominatedSort(alg3UnifiedParetoArchive);
+    vector<MinimalIndividual*> alg3UnifiedParetoArchive = joinFronts(alg3ParetoFronts);
+    vector<vector<MinimalIndividual*>> alg3FirstFront = Util::fastNonDominatedSort(alg3UnifiedParetoArchive);
 
-    vector<Individual*> alg4UnifiedParetoArchive = joinFronts(alg4ParetoFronts);
-    vector<vector<Individual*>> alg4FirstFront = Util::fastNonDominatedSort(alg4UnifiedParetoArchive);
+    vector<MinimalIndividual*> alg4UnifiedParetoArchive = joinFronts(alg4ParetoFronts);
+    vector<vector<MinimalIndividual*>> alg4FirstFront = Util::fastNonDominatedSort(alg4UnifiedParetoArchive);
 
 
-    vector<vector<Individual*>> allAlgsFronts{alg1UnifiedParetoArchive, alg2UnifiedParetoArchive, alg3UnifiedParetoArchive, alg4UnifiedParetoArchive};
-    vector<Individual*> trueParetoFront = joinFronts(allAlgsFronts);
+    vector<vector<MinimalIndividual*>> allAlgsFronts{alg1UnifiedParetoArchive, alg2UnifiedParetoArchive, alg3UnifiedParetoArchive, alg4UnifiedParetoArchive};
+    vector<MinimalIndividual*> trueParetoFront = joinFronts(allAlgsFronts);
     trueParetoFront = Util::fastNonDominatedSort(trueParetoFront)[0];
 
     csv += algorithmCSV(path, "alg1", baseSeed, alg1Its, iterations, alg1FirstFront.size(), trueParetoFront,
@@ -100,7 +107,11 @@ string runExperiment(string path, int iterations,int baseSeed){
                         alg4ParetoFronts);
 
 
-    Util::deallocate();
+    deallocateMinimalIndivduals(alg1UnifiedParetoArchive);
+    deallocateMinimalIndivduals(alg2UnifiedParetoArchive);
+    deallocateMinimalIndivduals(alg3UnifiedParetoArchive);
+    deallocateMinimalIndivduals(alg4UnifiedParetoArchive);
+   // Util::deallocate();
 
     return csv;
 
@@ -108,10 +119,11 @@ string runExperiment(string path, int iterations,int baseSeed){
 
 int main()
 {
-    //string expResults = runExperiment("../instances/294/3-4-20__75.txt", 1, 0);
-    //Util::outputToFile("results.csv", "id,alg,baseSeed,iterations,nsgaIterations,N,D(antiga), GD, IGD, S\n", true);
-   // Util::outputToFile("results.csv", expResults , true);
+    string expResults = runExperiment("../instances/294/3-4-20__75.txt", 3, 0);
+    Util::outputToFile("results.csv", "id,alg,baseSeed,iterations,nsgaIterations,N,D(antiga), GD, IGD, S\n", true);
+    Util::outputToFile("results.csv", expResults , true);
 
+    return 0;
     cout << "Hello" << endl;
 
     cout << "Iniciando leitura da instância...\n" << endl;
@@ -124,16 +136,16 @@ int main()
 
     // Build NSGA-II
     float crossoverProbability = 0.8;
-    float mutationProbability = 0.8;
+    float mutationProbability = 0.2;
     NSGAII nsgaii = NSGAII(instance, crossoverProbability, mutationProbability);
     nsgaii.setOutputEnabled(true);
-    
+
     // Run NSGA-II
     int seed = 111;
     nsgaii.run(seed);
 
     cout << "\nFIM\n";
-
+    //Util::deallocate();
     delete instance;
     return 0;
 }

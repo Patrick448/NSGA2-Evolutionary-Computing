@@ -8,6 +8,7 @@
 #include "defines.hpp"
 #include "Individual.hpp"
 #include "Factory.hpp"
+#include "MinimalIndividual.h"
 
 class Util {
 
@@ -15,23 +16,29 @@ private:
     static vector<Individual*> allocatedIndividuals;
 
 public:
-    static vector<vector<Individual*>> fastNonDominatedSort(vector<Individual*> population);
-    static float DMetric(vector<Individual*> &PF, vector<Individual*> &A);
-    static float SMetric(vector<Individual*> &PF, vector<Individual*> &A);
-    static float GDMetric(vector<Individual*> &PF, vector<Individual*> &A);
-    static float IGDMetric(vector<Individual*> &PF, vector<Individual*> &A);
+    static vector<vector<MinimalIndividual*>> fastNonDominatedSort(vector<MinimalIndividual*> population);
+    static float DMetric(vector<MinimalIndividual*> &PF, vector<MinimalIndividual*> &A);
+    static float SMetric(vector<MinimalIndividual*> &PF, vector<MinimalIndividual*> &A);
+    static float GDMetric(vector<MinimalIndividual*> &PF, vector<MinimalIndividual*> &A);
+    static float IGDMetric(vector<MinimalIndividual*> &PF, vector<MinimalIndividual*> &A);
     static string generateCSV(Factory* factory);
     static void allocate(Individual* sol);
     static void deallocate();
+    static MinimalIndividual* maxTECSol(vector<MinimalIndividual*> &v);
+    static MinimalIndividual* minTECSol(vector<MinimalIndividual*> &v);
+    static MinimalIndividual* maxTFTSol(vector<MinimalIndividual*> &v);
+    static MinimalIndividual* minTFTSol(vector<MinimalIndividual*> &v);
     static Individual* maxTECSol(vector<Individual*> &v);
     static Individual* minTECSol(vector<Individual*> &v);
     static Individual* maxTFTSol(vector<Individual*> &v);
     static Individual* minTFTSol(vector<Individual*> &v);
-    static float meanIGDMetric(vector<vector<Individual*>> &paretoArchive, vector<Individual*> &PF);
-    static float meanGDMetric(vector<vector<Individual*>> &paretoArchive, vector<Individual*> &PF);
-    static float meanSMetric(vector<vector<Individual*>> &paretoArchive, vector<Individual*> &PF);
-    static float meanDMetric(vector<vector<Individual*>> &paretoArchive, vector<Individual*> &PF);
-    static vector<Individual*> joinFronts(vector<vector<Individual*>> fronts);
+
+
+    static float meanIGDMetric(vector<vector<MinimalIndividual*>> &paretoArchive, vector<MinimalIndividual*> &PF);
+    static float meanGDMetric(vector<vector<MinimalIndividual*>> &paretoArchive, vector<MinimalIndividual*> &PF);
+    static float meanSMetric(vector<vector<MinimalIndividual*>> &paretoArchive, vector<MinimalIndividual*> &PF);
+    static float meanDMetric(vector<vector<MinimalIndividual*>> &paretoArchive, vector<MinimalIndividual*> &PF);
+    static vector<MinimalIndividual*> joinFronts(vector<vector<MinimalIndividual*>> fronts);
     static void outputToFile(string path, string text, bool append);
     static void checkDuplicateIndividualsAtFile(string path);
 

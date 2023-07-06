@@ -3,10 +3,11 @@
 //
 
 #include "Util.hpp"
+#include "MinimalIndividual.h"
 
 vector<Individual*> Util::allocatedIndividuals;
 
-vector<vector<Individual*>> Util::fastNonDominatedSort(vector<Individual*> population) {
+vector<vector<MinimalIndividual*>> Util::fastNonDominatedSort(vector<MinimalIndividual*> population) {
 
     vector<vector<int>> fronts(1);
     vector<vector<int>> dominatedBy(population.size());
@@ -40,7 +41,7 @@ vector<vector<Individual*>> Util::fastNonDominatedSort(vector<Individual*> popul
             for(int k=0; k<dominatedBy[frontSolId].size(); k++){ //itera por cada solução dominada pela de indice frontSolId
                 int dominatedSolIndex = dominatedBy[frontSolId][k]; // id de cada solução dominada por frontSolId
 
-                Individual *s = population[dominatedSolIndex]; // cada solução dominada por frontSolId
+                MinimalIndividual *s = population[dominatedSolIndex]; // cada solução dominada por frontSolId
 
                 s->incrementDominationCounter(-1);
 
@@ -54,9 +55,9 @@ vector<vector<Individual*>> Util::fastNonDominatedSort(vector<Individual*> popul
         fronts.push_back(nextFront);
     }
 
-    vector<vector<Individual*>> IndividualFronts(fronts.size());
+    vector<vector<MinimalIndividual*>> IndividualFronts(fronts.size());
     for(int i=0; i< fronts.size(); i++){
-        vector<Individual*> front(fronts[i].size());
+        vector<MinimalIndividual*> front(fronts[i].size());
         for(int j=0; j < fronts[i].size(); j++){
             front[j] = population[fronts[i][j]];
         }
@@ -66,10 +67,10 @@ vector<vector<Individual*>> Util::fastNonDominatedSort(vector<Individual*> popul
     IndividualFronts.pop_back();
     return IndividualFronts;
 }
-Individual* extremeTEC(vector<Individual*> &v, bool maxExtreme)
+MinimalIndividual* extremeTEC(vector<MinimalIndividual*> &v, bool maxExtreme)
 {
     float extreme;
-    Individual* extremeIndividual;
+    MinimalIndividual* extremeIndividual;
 
     if(maxExtreme){
         extreme=0;
@@ -92,6 +93,60 @@ Individual* extremeTEC(vector<Individual*> &v, bool maxExtreme)
     }
 
     return extremeIndividual;
+}
+
+
+MinimalIndividual* Util::maxTECSol(vector<MinimalIndividual*> &v){
+    float max=0;
+    MinimalIndividual* sol;
+
+    for(int i=0; i<v.size(); i++){
+        if(v[i]->getTEC() > max){
+            max = v[i]->getTEC();
+            sol = v[i];
+        }
+    }
+    return sol;
+}
+
+MinimalIndividual* Util::maxTFTSol(vector<MinimalIndividual*> &v){
+    float max=0;
+    MinimalIndividual* sol;
+
+    for(int i=0; i<v.size(); i++){
+        if(v[i]->getTFT() > max){
+            max = v[i]->getTFT();
+            sol = v[i];
+        }
+    }
+    return sol;
+}
+
+
+MinimalIndividual* Util::minTECSol(vector<MinimalIndividual*> &v){
+    float min=INFINITY;
+    MinimalIndividual* sol;
+
+    for(int i=0; i<v.size(); i++){
+        if(v[i]->getTEC() < min){
+            min = v[i]->getTEC();
+            sol = v[i];
+        }
+    }
+    return sol;
+}
+
+MinimalIndividual* Util::minTFTSol(vector<MinimalIndividual*> &v){
+    float min=INFINITY;
+    MinimalIndividual* sol;
+
+    for(int i=0; i<v.size(); i++){
+        if(v[i]->getTFT() < min){
+            min = v[i]->getTFT();
+            sol = v[i];
+        }
+    }
+    return sol;
 }
 
 
@@ -151,7 +206,7 @@ Individual* Util::minTFTSol(vector<Individual*> &v){
 
 // Functions that came from main
 
-float euclideanDistance(Individual* sol1, Individual* sol2){
+float euclideanDistance(MinimalIndividual* sol1, MinimalIndividual* sol2){
     float sol1Y = sol1->getTEC();
     float sol1X = sol1->getTFT();
     float sol2Y = sol2->getTEC();
@@ -161,7 +216,7 @@ float euclideanDistance(Individual* sol1, Individual* sol2){
     return distance;
 }
 
-float normalizedEuclideanDistance(Individual* sol1, Individual* sol2, float maxTFT, float minTFT, float maxTEC, float minTEC){
+float normalizedEuclideanDistance(MinimalIndividual* sol1, MinimalIndividual* sol2, float maxTFT, float minTFT, float maxTEC, float minTEC){
     float sol1TEC = sol1->getTEC();
     float sol1TFT = sol1->getTFT();
     float sol2TEC = sol2->getTEC();
@@ -175,7 +230,7 @@ float normalizedEuclideanDistance(Individual* sol1, Individual* sol2, float maxT
     return distance;
 }
 
-float Util::DMetric(vector<Individual*> &PF, vector<Individual*> &A){
+float Util::DMetric(vector<MinimalIndividual*> &PF, vector<MinimalIndividual*> &A){
 
     float sum = 0;
     for(int i=0; i < PF.size(); i++){
@@ -192,7 +247,7 @@ float Util::DMetric(vector<Individual*> &PF, vector<Individual*> &A){
     return sum/PF.size();
 }
 
-float Util::GDMetric(vector<Individual*> &PF, vector<Individual*> &A){
+float Util::GDMetric(vector<MinimalIndividual*> &PF, vector<MinimalIndividual*> &A){
     float minTEC = minTECSol(PF)->getTEC();
     float minTFT = minTFTSol(PF)->getTFT();
     float maxTEC = maxTECSol(PF)->getTEC();
@@ -213,7 +268,7 @@ float Util::GDMetric(vector<Individual*> &PF, vector<Individual*> &A){
     return sqrtf(sum)/A.size();
 }
 
-float Util::IGDMetric(vector<Individual*> &PF, vector<Individual*> &A){
+float Util::IGDMetric(vector<MinimalIndividual*> &PF, vector<MinimalIndividual*> &A){
     float minTEC = minTECSol(PF)->getTEC();
     float minTFT = minTFTSol(PF)->getTFT();
     float maxTEC = maxTECSol(PF)->getTEC();
@@ -237,7 +292,7 @@ float Util::IGDMetric(vector<Individual*> &PF, vector<Individual*> &A){
 
 
 
-float Util::SMetric(vector<Individual*> &PF, vector<Individual*> &A) {
+float Util::SMetric(vector<MinimalIndividual*> &PF, vector<MinimalIndividual*> &A) {
 
     float diSum, dMean = 0;
     vector<float> d;
@@ -321,8 +376,8 @@ void Util::outputToFile(string path, string text, bool append){
     outputf.close();
 }
 
-vector<Individual*> Util::joinFronts(vector<vector<Individual*>> fronts){
-    vector<Individual*> result ;
+vector<MinimalIndividual*> Util::joinFronts(vector<vector<MinimalIndividual*>> fronts){
+    vector<MinimalIndividual*> result ;
 
     for(int i=0; i< fronts.size(); i++){
         for(int j=0; j< fronts[i].size(); j++){
@@ -333,7 +388,7 @@ vector<Individual*> Util::joinFronts(vector<vector<Individual*>> fronts){
     return result;
 }
 
-float Util::meanDMetric(vector<vector<Individual*>> &paretoArchive, vector<Individual*> &PF){
+float Util::meanDMetric(vector<vector<MinimalIndividual*>> &paretoArchive, vector<MinimalIndividual*> &PF){
 
     float sum = 0;
     for(int i=0; i< paretoArchive.size(); i++){
@@ -343,7 +398,7 @@ float Util::meanDMetric(vector<vector<Individual*>> &paretoArchive, vector<Indiv
     return sum/paretoArchive.size();
 }
 
-float Util::meanSMetric(vector<vector<Individual*>> &paretoArchive, vector<Individual*> &PF){
+float Util::meanSMetric(vector<vector<MinimalIndividual*>> &paretoArchive, vector<MinimalIndividual*> &PF){
 
     float sum = 0;
     for(int i=0; i< paretoArchive.size(); i++){
@@ -353,7 +408,7 @@ float Util::meanSMetric(vector<vector<Individual*>> &paretoArchive, vector<Indiv
     return sum/paretoArchive.size();
 }
 
-float Util::meanGDMetric(vector<vector<Individual*>> &paretoArchive, vector<Individual*> &PF){
+float Util::meanGDMetric(vector<vector<MinimalIndividual*>> &paretoArchive, vector<MinimalIndividual*> &PF){
 
     float sum = 0;
     for(int i=0; i< paretoArchive.size(); i++){
@@ -363,7 +418,7 @@ float Util::meanGDMetric(vector<vector<Individual*>> &paretoArchive, vector<Indi
     return sum/paretoArchive.size();
 }
 
-float Util::meanIGDMetric(vector<vector<Individual*>> &paretoArchive, vector<Individual*> &PF){
+float Util::meanIGDMetric(vector<vector<MinimalIndividual*>> &paretoArchive, vector<MinimalIndividual*> &PF){
 
     float sum = 0;
     for(int i=0; i< paretoArchive.size(); i++){

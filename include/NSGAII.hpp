@@ -4,6 +4,7 @@
 #include "defines.hpp"
 #include "Individual.hpp"
 #include "Problem.hpp"
+#include "MinimalIndividual.h"
 
 class NSGAII
 {
@@ -13,7 +14,7 @@ private:
     vector<Individual *> population; // Population of Individuals
     vector<Individual *> paretoArchive;
     vector<vector<Individual *>> dominationFronts;
-
+    vector<MinimalIndividual*> minimalParetoFront;
     float crossoverRate;
     float mutationRate;
     bool outputEnabled = false;
@@ -78,6 +79,8 @@ public:
 
     int getNumIterations();
 
+    void makeMinimalParetoFront();
+    vector<MinimalIndividual*> getMinimalParetoFront();
 };
 
 #endif // NSGAII_HPP

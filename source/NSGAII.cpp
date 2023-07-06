@@ -12,7 +12,7 @@ NSGAII::~NSGAII() {
 
     if (this->population.size() > 0) {
         for (int i = 0; i < this->population.size(); i++) {
-            //delete this->population[i];
+            delete this->population[i];
         }
     }
 }
@@ -185,7 +185,7 @@ Individual *NSGAII::maxSMinTFT() {
                 Individual *twinIndividual = new Individual(individual);
 
                 // Insert the job in the position pos of the factory f
-                twinIndividual->getFactory(f)->addJobAtPosition(job, pos);
+                twinIndividual->getFactory(f)->addJobAtPosition(new Job(job), pos);
                 twinIndividual->getFactory(f)->initializeJobsStartTimes();
 
                 // Calculate the TFT increase
@@ -198,6 +198,8 @@ Individual *NSGAII::maxSMinTFT() {
                     minTFTFactoryId = f;
                     minTFTFactoryPos = pos;
                 }
+
+                delete twinIndividual;
             }
         }
 
@@ -414,7 +416,7 @@ Individual *NSGAII::minSMinTEC()
                 Individual *twinIndividual = new Individual(individual);
 
                 // Insert the job in the position pos of the factory f
-                twinIndividual->getFactory(f)->addJobAtPosition(job, pos);
+                twinIndividual->getFactory(f)->addJobAtPosition(new Job(job), pos);
 
                 // Initialize the start_times
                 twinIndividual->getFactory(f)->initializeJobsStartTimes();
@@ -430,6 +432,8 @@ Individual *NSGAII::minSMinTEC()
                     minTECFactoryId = f;
                     minTECFactoryPos = pos;
                 }
+
+                delete twinIndividual;
             }
         }
 
@@ -1107,6 +1111,7 @@ void NSGAII::NSGA2NextGeneration(int seed) {
     vector<Individual *> nextGen;
 
     // Recombine and mutate parents into this vector
+
     vector<Individual *> children = this->makeChildren(seed);
 
     // join parents and children into this vector
@@ -1146,15 +1151,33 @@ void NSGAII::NSGA2NextGeneration(int seed) {
         nextGen.reserve(fronts[l].size());
         nextGen.insert(nextGen.end(), fronts[l].begin(), fronts[l].end());
     }*/
+
+    int lastIndIndex;
     if (nextGen.size() < n) {
         // nextGen.reserve(n);
         sort(fronts[l].begin(), fronts[l].end(), crowdedCompare);
         for (int i = 0; nextGen.size() < n; i++) {
             nextGen.push_back(fronts[l][i]);
+            lastIndIndex = i;
         }
     }
 
+    int count = 0;
+    for(int j=lastIndIndex+1; j<fronts[l].size(); j++){
+        delete fronts[l][j];
+        count ++;
+    }
+
+    for(int i=l+1; i<fronts.size(); i++){
+        for(int j=0; j<fronts[i].size(); j++){
+            delete fronts[i][j];
+            count ++;
+        }
+    }
+
+   // cout << "Deleted " << count << " individuals out of " << this->population.size() << endl;
     this->population = nextGen;
+    this->fastNonDominatedSort();
 }
 
 void NSGAII::NSGA2NextGen(int seed) {
@@ -1902,7 +1925,7 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed) {
             int factoryNumJobs = newIndividual->getFactory(f)->getNumJobs();
             for (int pos = 0; pos < factoryNumJobs; pos++) {
                 // Insert the job to the factory
-                newIndividual->insert(largestFactoryIndex, f, job, pos);
+                newIndividual->insert(largestFactoryIndex, f, new Job(job), pos);
 
                 // Change the factory
                 if (randomObjective == 0) // Optimize TFT
@@ -1932,6 +1955,8 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed) {
             }
         }
     }
+
+    delete newIndividual;
     return nullptr;
 }
 
@@ -2194,6 +2219,7 @@ vector<Individual *> NSGAII::makenewpop_operators_ND(vector<Individual *> parent
 // }
 
 void NSGAII::run(int seed) {
+    //cout << "running experiment " << seed << endl;
     clock_t start, end;
 
     // Initialize the population PS = 30 individuals (26 random + 4 balanced)
@@ -2206,6 +2232,7 @@ void NSGAII::run(int seed) {
     this->population.push_back(this->maxSMinTFT());
     this->fastNonDominatedSort();
 
+    //cout << "initial pop generated " << seed << endl;
     // Assign crowding distance to individuals to facilitate the selection process
     this->assignCrowdingDistance();
     string experimentDir = "../analysis/exp/"+to_string(seed);
@@ -2240,6 +2267,7 @@ void NSGAII::run(int seed) {
         end = clock();
         double time_taken = double(end - start) / double(CLOCKS_PER_SEC);
 
+        //cout << "counter: " << counter << " time: " << time_taken << endl;
         if (time_taken > this->problem->getN() / 2 || counter >= 1000) {
             cout << "Time's up! " << counter << " iterations in " << time_taken << " seconds" << endl;
             break;
@@ -2260,7 +2288,7 @@ void NSGAII::run(int seed) {
 
 
     this->fastNonDominatedSort();
-
+    this->makeMinimalParetoFront();
     // Add the pareto front to the archive
     // for (Individual *i: this->getParetoFront()) {
     //     this->updateArchive(i);
@@ -2276,4 +2304,17 @@ void NSGAII::setOutputEnabled(bool outputEnabled) {
 
 int NSGAII::getNumIterations() {
     return this->numIterations;
+}
+
+void NSGAII::makeMinimalParetoFront() {
+    this->minimalParetoFront.reserve(this->getParetoFront().size());
+
+    for(Individual* i:this->getParetoFront()){
+       MinimalIndividual* mi = new MinimalIndividual(i);
+       minimalParetoFront.push_back(mi);
+    }
+}
+
+vector<MinimalIndividual *> NSGAII::getMinimalParetoFront() {
+    return this->minimalParetoFront;
 }
