@@ -1068,7 +1068,7 @@ vector<Individual *> NSGAII::makeChildren(int seed) {
 
     // Mutation
    for (int i = 0; i < this->population.size(); i++) {
-         /* float probability = (float) rand() / (float) RAND_MAX;
+         float probability = (float) rand() / (float) RAND_MAX;
 
         // If probability is less than mutation rate, then mutate
          if (probability < this->mutationRate) {
@@ -1078,16 +1078,13 @@ vector<Individual *> NSGAII::makeChildren(int seed) {
 
              // Criei uma nova função INGM chamada INGM_V2 que é uma versão que acredito estar mais correta do que
              // a implementação anterior e talvez não fique demorando tanto para achar uma solução que domine o pai
-             Individual *child = this->INGM_V2(this->population[i], rand() % RAND_MAX);
+            //  Individual *child = this->INGM_V2(this->population[i], rand() % RAND_MAX);
+             Individual *child = this->INGM_ND(this->population[i], rand());
 
              if (child != nullptr) {
                  children.push_back(child);
              }
-         }*/
-        Individual *child = this->INGM_ND(this->population[i], rand());
-        if (child != nullptr) {
-            children.push_back(child);
-        }
+         }
     }
     
 
