@@ -119,11 +119,11 @@ string runExperiment(string path, int iterations,int baseSeed){
 
 int main()
 {
-    string expResults = runExperiment("../instances/294/3-4-20__75.txt", 1, 0);
-    Util::outputToFile("results.csv", "id,alg,baseSeed,iterations,nsgaIterations,N,D(antiga), GD, IGD, S\n", true);
-    Util::outputToFile("results.csv", expResults , true);
+    //string expResults = runExperiment("../instances/294/3-4-20__75.txt", 1, 0);
+    //Util::outputToFile("results.csv", "id,alg,baseSeed,iterations,nsgaIterations,N,D(antiga), GD, IGD, S\n", true);
+    //Util::outputToFile("results.csv", expResults , true);
 
-    return 0;
+   // return 0;
     cout << "Hello" << endl;
 
     cout << "Iniciando leitura da instância...\n" << endl;
@@ -136,7 +136,7 @@ int main()
 
     // Build NSGA-II
     float crossoverProbability = 0.8;
-    float mutationProbability = 0.2;
+    float mutationProbability = 0.8;
     NSGAII nsgaii = NSGAII(instance, crossoverProbability, mutationProbability);
     nsgaii.setOutputEnabled(true);
 

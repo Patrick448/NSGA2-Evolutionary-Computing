@@ -253,13 +253,14 @@ Individual *NSGAII::randSMinTFT(int seed) {
     float testFactoryTFT;
     float tftVariation;
     float previousTFT;
-    Factory *minTFTFactory;
+
 
     // for each factory f
     for (int j = this->problem->getF();
          j < jobs.size(); j++) { // test job j at all the possible positions of PI_k (the factory)
         float minIncreaseTFT = INFINITY;
         float minTFTPos = 0;
+        Factory *minTFTFactory = new Factory();
 
         for (int f = 0; f < this->problem->getF(); f++) {
             testFactory = individual->getFactory(f)->minTFTAfterInsertion(jobs[j]);
@@ -269,10 +270,12 @@ Individual *NSGAII::randSMinTFT(int seed) {
 
             if (tftVariation < minIncreaseTFT) {
                 minIncreaseTFT = tftVariation;
+                minTFTFactory->clearJobs();
+                delete minTFTFactory;
                 minTFTFactory = testFactory;
                 minTFTPos = f;
             } else {
-                // testFactory->clearJobs();
+                testFactory->clearJobs();
                 delete testFactory;
             }
         }
@@ -488,12 +491,13 @@ Individual *NSGAII::randSMinTEC(int seed) {
     float testFactoryTEC;
     float tecVariation;
     float previousTEC;
-    Factory *minTECFactory;
+
 
     // For each factory f
     for (int i = this->problem->getF(); i < jobs.size(); i++) {
         float minIncreaseTEC = INFINITY;
         float minTECPos = 0;
+        Factory *minTECFactory = new Factory();
 
         // Test job j at all the possible positions of PI_k (the factory)
         for (int k = 0; k < this->problem->getF(); k++) {
@@ -504,10 +508,12 @@ Individual *NSGAII::randSMinTEC(int seed) {
 
             if (tecVariation < minIncreaseTEC) {
                 minIncreaseTEC = tecVariation;
+                minTECFactory->clearJobs();
+                delete minTECFactory;
                 minTECFactory = testFactory;
                 minTECPos = k;
             } else {
-                // testFactory->clearJobs();
+                testFactory->clearJobs();
                 delete testFactory;
             }
         }
