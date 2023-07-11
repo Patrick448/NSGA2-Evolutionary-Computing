@@ -1142,6 +1142,7 @@ void NSGAII::NSGA2NextGeneration(int seed) {
 
         for (int j = 0; j < fronts[i].size(); j++) {
             nextGen.push_back(fronts[i][j]);
+            l=i;
             inserted++;
         }
     }
@@ -1925,7 +1926,7 @@ Individual *NSGAII::INGM_ND(Individual *individual, int seed) {
             int factoryNumJobs = newIndividual->getFactory(f)->getNumJobs();
             for (int pos = 0; pos < factoryNumJobs; pos++) {
                 // Insert the job to the factory
-                newIndividual->insert(largestFactoryIndex, f, new Job(job), pos);
+                newIndividual->insert(largestFactoryIndex, f, job, pos);
 
                 // Change the factory
                 if (randomObjective == 0) // Optimize TFT

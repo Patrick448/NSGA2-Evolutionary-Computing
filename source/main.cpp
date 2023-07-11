@@ -69,13 +69,13 @@ string runExperiment(string path, int iterations,int baseSeed){
     vector<vector<MinimalIndividual*>> alg4ParetoFronts;
 
     int alg1Its=0;
-    alg1ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg1Its, 0.2, 0.8);
+    alg1ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg1Its, 0.0, 0.8);
     int alg2Its=0;
-    alg2ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg2Its, 0.2, 0.8);
+    alg2ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg2Its, 0.0, 0.8);
     int alg3Its=0;
-    alg3ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg3Its, 0.2, 0.8);
+    alg3ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg3Its, 0.0, 0.8);
     int alg4Its=0;
-    alg4ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg4Its, 0.2, 0.8);
+    alg4ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg4Its, 0.0, 0.8);
 
     vector<MinimalIndividual*> alg1UnifiedParetoArchive = joinFronts(alg1ParetoFronts);
     vector<vector<MinimalIndividual*>> alg1FirstFront = Util::fastNonDominatedSort(alg1UnifiedParetoArchive);
@@ -119,7 +119,7 @@ string runExperiment(string path, int iterations,int baseSeed){
 
 int main()
 {
-    string expResults = runExperiment("../instances/294/3-4-20__75.txt", 3, 0);
+    string expResults = runExperiment("../instances/294/3-4-20__75.txt", 1, 0);
     Util::outputToFile("results.csv", "id,alg,baseSeed,iterations,nsgaIterations,N,D(antiga), GD, IGD, S\n", true);
     Util::outputToFile("results.csv", expResults , true);
 
