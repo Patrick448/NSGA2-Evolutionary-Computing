@@ -495,23 +495,22 @@ float Util::hypervolumeMetric(vector<MinimalIndividual*> &PF)
     float referencePointTEC = PF[indexMinTFT]->getTEC();
 
     // Create a new PF with the normalized values
-    // TODO: Check if it is really necessary
-    vector<MinimalIndividual*> normalizedPF;
+    vector<MinimalIndividual> normalizedPF;
     for(int i = 0; i < PF.size(); i++)
     {
         float normalizedTFT = (PF[i]->getTFT() - PF[indexMinTFT]->getTFT()) / (referencePointTFT - PF[indexMinTFT]->getTFT());
         float normalizedTEC = (PF[i]->getTEC() - PF[indexMinTEC]->getTEC()) / (referencePointTEC - PF[indexMinTEC]->getTEC());
         
         // Clone the individual
-        MinimalIndividual* normalizedIndividual(PF[i]);
-        normalizedIndividual->setTFT(normalizedTFT);
-        normalizedIndividual->setTEC(normalizedTEC);
+        MinimalIndividual normalizedIndividual = *PF[i];
+        normalizedIndividual.setTFT(normalizedTFT);
+        normalizedIndividual.setTEC(normalizedTEC);
         normalizedPF.push_back(normalizedIndividual);
     }
 
     // Sort the normalized PF by TEC
-    sort(normalizedPF.begin(), normalizedPF.end(), [](MinimalIndividual* a, MinimalIndividual* b) {
-        return a->getTEC() < b->getTEC();
+    sort(normalizedPF.begin(), normalizedPF.end(), [](MinimalIndividual &a, MinimalIndividual &b) {
+        return a.getTEC() < b.getTEC();
     });
 
     // Calculate the hypervolume
@@ -520,20 +519,20 @@ float Util::hypervolumeMetric(vector<MinimalIndividual*> &PF)
     float height = 0;
     for(int i = 0; i < normalizedPF.size()-1; i++)
     {
-        width = normalizedPF[i+1]->getTEC() - normalizedPF[i]->getTEC();
-        height = referencePointTFT - normalizedPF[i]->getTFT();
+        width = normalizedPF[i+1].getTEC() - normalizedPF[i].getTEC();
+        height = referencePointTFT - normalizedPF[i].getTFT();
         hypervolume += width * height;
     }
     // Add the last rectangle
-    width = referencePointTEC - normalizedPF[normalizedPF.size()-1]->getTEC();
-    height = referencePointTFT - normalizedPF[normalizedPF.size()-1]->getTFT();
+    width = referencePointTEC - normalizedPF[normalizedPF.size()-1].getTEC();
+    height = referencePointTFT - normalizedPF[normalizedPF.size()-1].getTFT();
     hypervolume += width * height;
 
     // Delete normalized individuals
-    for(int i = 0; i < normalizedPF.size(); i++)
-    {
-        delete normalizedPF[i];
-    }
+    // for(int i = 0; i < normalizedPF.size(); i++)
+    // {
+    //     delete normalizedPF[i];
+    // }
 
     return hypervolume;
 }
