@@ -499,8 +499,10 @@ float Util::hypervolumeMetric(vector<MinimalIndividual*> &PF)
     vector<MinimalIndividual*> normalizedPF;
     for(int i = 0; i < PF.size(); i++)
     {
-        float normalizedTFT = PF[i]->getTFT() / referencePointTFT;
-        float normalizedTEC = PF[i]->getTEC() / referencePointTEC;
+        float normalizedTFT = (PF[i]->getTFT() - PF[indexMinTFT]->getTFT()) / (referencePointTFT - PF[indexMinTFT]->getTFT());
+        float normalizedTEC = (PF[i]->getTEC() - PF[indexMinTEC]->getTEC()) / (referencePointTEC - PF[indexMinTEC]->getTEC());
+        
+        // Clone the individual
         MinimalIndividual* normalizedIndividual(PF[i]);
         normalizedIndividual->setTFT(normalizedTFT);
         normalizedIndividual->setTEC(normalizedTEC);
@@ -527,5 +529,21 @@ float Util::hypervolumeMetric(vector<MinimalIndividual*> &PF)
     height = referencePointTFT - normalizedPF[normalizedPF.size()-1]->getTFT();
     hypervolume += width * height;
 
+    // Delete normalized individuals
+    for(int i = 0; i < normalizedPF.size(); i++)
+    {
+        delete normalizedPF[i];
+    }
+
     return hypervolume;
+}
+
+float Util::meanHypervolumeMetric(vector<vector<MinimalIndividual*>> &paretoArchive)
+{
+    float sum = 0;
+    for(int i=0; i< paretoArchive.size(); i++){
+        sum+= Util::hypervolumeMetric(paretoArchive[i]);
+    }
+
+    return sum/paretoArchive.size();
 }

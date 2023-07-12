@@ -51,7 +51,7 @@ string algorithmCSV(string path, string alg, int baseSeed, int nsgaIterationsSum
            + "," + to_string(Util::meanGDMetric(algParetoArchive, trueParetoFront))
            + "," + to_string(Util::meanIGDMetric(algParetoArchive, trueParetoFront))
            + "," + to_string(Util::meanSMetric(algParetoArchive, trueParetoFront))
-           + "," + to_string(Util::hypervolumeMetric(trueParetoFront))
+           + "," + to_string(Util::meanHypervolumeMetric(algParetoArchive))
            + "\n";
 }
 

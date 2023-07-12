@@ -44,6 +44,7 @@ public:
     static void checkDuplicateIndividualsAtFile(string path);
 
     static float hypervolumeMetric(vector<MinimalIndividual*> &PF);
+    static float meanHypervolumeMetric(vector<vector<MinimalIndividual*>> &paretoArchive);
     };
 
 #endif //UTIL_H
