@@ -2095,10 +2095,10 @@ void NSGAII::run(int seed, int iterationsLimit, float timeLimit, int option) {
         }
     }
 
-    if (this->outputEnabled) {
+    /* if (this->outputEnabled) {
         // Check duplicates at last iteration file
         Util::checkDuplicateIndividualsAtFile(experimentCSVDir + "/after_" + to_string(counter) + ".csv");
-    }
+    } */
 
 
     this->fastNonDominatedSort();

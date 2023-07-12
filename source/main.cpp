@@ -30,7 +30,8 @@ vector<vector<MinimalIndividual*>> runAlgorithmGetAchives(string path, int itera
 
     for(int i=0; i<iterations; i++){
         NSGAII nsgaii = NSGAII(instance, crossoverProbability, mutationProbability);
-        nsgaii.run(baseSeed+i, 500, instance->getN() / 2, option);
+        nsgaii.run(baseSeed+i, 1000, INFINITY, option);
+        nsgaii.setOutputEnabled(false);
         nsgaIterationsSum += nsgaii.getNumIterations();
         paretoArchive.push_back(nsgaii.getMinimalParetoFront());
     }
@@ -189,8 +190,38 @@ int main()
 {
     string expResults = "";
     Util::outputToFile("results.csv", "id, alg, baseSeed, iterations, nsgaIterations, N, D(antiga), GD, IGD, S, HV\n", true);
-    expResults = runCrossoverExperiment("../instances/294/3-4-20__75.txt", 1, 0);
+
+    expResults = runCrossoverExperiment("../instances/566/2-4-60__0.txt", 5, 0);
     Util::outputToFile("results.csv", expResults , true);
+    cout << "2-4-60__0.txt done!\n" << endl;
+
+    expResults = runCrossoverExperiment("../instances/566/2-16-60__0.txt", 5, 0);
+    Util::outputToFile("results.csv", expResults , true);
+    cout << "2-16-60__0.txt done!\n" << endl;
+
+    expResults = runCrossoverExperiment("../instances/566/3-4-60__0.txt", 5, 0);
+    Util::outputToFile("results.csv", expResults , true);
+    cout << "3-4-60__0.txt done!\n" << endl;
+
+    expResults = runCrossoverExperiment("../instances/566/3-16-60__0.txt", 5, 0);
+    Util::outputToFile("results.csv", expResults , true);   
+    cout << "3-16-60__0.txt done!\n" << endl;
+
+    expResults = runCrossoverExperiment("../instances/566/4-4-60__0.txt", 5, 0);
+    Util::outputToFile("results.csv", expResults , true);
+    cout << "4-4-60__0.txt done!\n" << endl;
+
+    expResults = runCrossoverExperiment("../instances/566/4-16-60__0.txt", 5, 0);
+    Util::outputToFile("results.csv", expResults , true);
+    cout << "4-16-60__0.txt done!\n" << endl;
+
+    expResults = runCrossoverExperiment("../instances/566/5-4-60__0.txt", 5, 0);
+    Util::outputToFile("results.csv", expResults , true);
+    cout << "5-4-60__0.txt done!\n" << endl;
+
+    expResults = runCrossoverExperiment("../instances/566/5-16-60__0.txt", 5, 0);
+    Util::outputToFile("results.csv", expResults , true);
+    cout << "5-16-60__0.txt done!\n" << endl;
 
     return 0;
     cout << "Hello" << endl;
