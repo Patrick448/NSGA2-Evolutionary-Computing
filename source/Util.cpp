@@ -469,37 +469,25 @@ void Util::checkDuplicateIndividualsAtFile(string path)
 }
 
 // Hypervolume metric
-float Util::hypervolumeMetric(vector<MinimalIndividual*> &PF)
+float Util::hypervolumeMetric(vector<MinimalIndividual*> &PF, float maxTFT, float maxTEC)
 {
     // Get the reference point (Nadir point)
     // The approximate Nadir point is the worst value of each objective
-    // The approx Nadir point will have the TFT of the best solution in TEC and the TEC of the best solution in TFT
-    float tftAux = PF[0]->getTFT();
-    float tecAux = PF[0]->getTEC();
-    int indexMinTFT = 0;
-    int indexMinTEC = 0;
-    for(int i = 0; i < PF.size(); i++)
-    {
-        if(PF[i]->getTFT() < tftAux)
-        {
-            tftAux = PF[i]->getTFT();
-            indexMinTFT = i;
-        }
-        if(PF[i]->getTEC() < tecAux)
-        {
-            tecAux = PF[i]->getTEC();
-            indexMinTEC = i;
-        }
-    }
-    float referencePointTFT = PF[indexMinTEC]->getTFT();
-    float referencePointTEC = PF[indexMinTFT]->getTEC();
+    float referencePointTFT = maxTFT;
+    float referencePointTEC = maxTEC;
+
+    // Get the individuals with the minimum TFT and TEC
+    MinimalIndividual* minTFTIndividual = minTFTSol(PF);
+    float minTFT = minTFTIndividual->getTFT();
+    MinimalIndividual* minTECIndividual = minTECSol(PF);
+    float minTEC = minTECIndividual->getTEC();
 
     // Create a new PF with the normalized values
     vector<MinimalIndividual> normalizedPF;
     for(int i = 0; i < PF.size(); i++)
     {
-        float normalizedTFT = (PF[i]->getTFT() - PF[indexMinTFT]->getTFT()) / (referencePointTFT - PF[indexMinTFT]->getTFT());
-        float normalizedTEC = (PF[i]->getTEC() - PF[indexMinTEC]->getTEC()) / (referencePointTEC - PF[indexMinTEC]->getTEC());
+        float normalizedTFT = (PF[i]->getTFT() - minTFT) / (referencePointTFT - minTFT);
+        float normalizedTEC = (PF[i]->getTEC() - minTEC) / (referencePointTEC - minTEC);
         
         // Clone the individual
         MinimalIndividual normalizedIndividual = *PF[i];
@@ -512,6 +500,10 @@ float Util::hypervolumeMetric(vector<MinimalIndividual*> &PF)
     sort(normalizedPF.begin(), normalizedPF.end(), [](MinimalIndividual &a, MinimalIndividual &b) {
         return a.getTEC() < b.getTEC();
     });
+
+    // Normalize the reference point
+    referencePointTFT = (referencePointTFT - minTFT) / (referencePointTFT - minTFT);
+    referencePointTEC = (referencePointTEC - minTEC) / (referencePointTEC - minTEC);
 
     // Calculate the hypervolume
     float hypervolume = 0;
@@ -528,21 +520,34 @@ float Util::hypervolumeMetric(vector<MinimalIndividual*> &PF)
     height = referencePointTFT - normalizedPF[normalizedPF.size()-1].getTFT();
     hypervolume += width * height;
 
-    // Delete normalized individuals
-    // for(int i = 0; i < normalizedPF.size(); i++)
-    // {
-    //     delete normalizedPF[i];
-    // }
-
     return hypervolume;
 }
 
 float Util::meanHypervolumeMetric(vector<vector<MinimalIndividual*>> &paretoArchive)
 {
-    float sum = 0;
-    for(int i=0; i< paretoArchive.size(); i++){
-        sum+= Util::hypervolumeMetric(paretoArchive[i]);
+    // Get Nadir point (the worst value of each objective)
+    MinimalIndividual* pointMaxTFT = maxTFTSol(paretoArchive[0]);
+    MinimalIndividual* pointMaxTEC = maxTECSol(paretoArchive[0]);
+    float referencePointTFT = pointMaxTFT->getTFT();
+    float referencePointTEC = pointMaxTEC->getTEC();
+    for(int i = 1; i < paretoArchive.size(); i++)
+    {
+        pointMaxTFT = maxTFTSol(paretoArchive[i]);
+        pointMaxTEC = maxTECSol(paretoArchive[i]);
+        if(pointMaxTFT->getTFT() > referencePointTFT)
+        {
+            referencePointTFT = pointMaxTFT->getTFT();
+        }
+        if(pointMaxTEC->getTEC() > referencePointTEC)
+        {
+            referencePointTEC = pointMaxTEC->getTEC();
+        }
     }
 
-    return sum/paretoArchive.size();
+    float sum = 0;
+    for(int i = 0; i < paretoArchive.size(); i++){
+        sum += Util::hypervolumeMetric(paretoArchive[i], referencePointTFT, referencePointTEC);
+    }
+
+    return sum / paretoArchive.size();
 }

@@ -104,7 +104,7 @@ def plot_before_after(before_path, after_path, str_before, str_after, out=None, 
     ax.grid(True)
 
     if x is not None:
-        plt.xticks(create_ticks(x[0], x[1], 10))
+        plt.xticks(create_ticks(x[0], x[1], 10), rotation=45)
 
     if y is not None:
         plt.yticks(create_ticks(y[0], y[1], 10))

@@ -43,7 +43,7 @@ public:
     static void outputToFile(string path, string text, bool append);
     static void checkDuplicateIndividualsAtFile(string path);
 
-    static float hypervolumeMetric(vector<MinimalIndividual*> &PF);
+    static float hypervolumeMetric(vector<MinimalIndividual*> &PF, float maxTFT, float maxTEC);
     static float meanHypervolumeMetric(vector<vector<MinimalIndividual*>> &paretoArchive);
     };
 

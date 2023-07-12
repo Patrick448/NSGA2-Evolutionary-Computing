@@ -178,7 +178,7 @@ string runAlgorithmComparisonExperiment(string path, int iterations, int baseSee
 int main()
 {
     string expResults = runAlgorithmComparisonExperiment("../instances/294/3-4-20__75.txt", 1, 0);
-    Util::outputToFile("results.csv", "id,alg,baseSeed,iterations,nsgaIterations,N,D(antiga), GD, IGD, S, HV\n", true);
+    Util::outputToFile("results.csv", "id, alg, baseSeed, iterations, nsgaIterations, N, D(antiga), GD, IGD, S, HV\n", true);
     Util::outputToFile("results.csv", expResults , true);
 
     return 0;
