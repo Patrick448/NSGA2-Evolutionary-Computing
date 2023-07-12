@@ -68,15 +68,18 @@ string runCrossoverExperiment(string path, int iterations, int baseSeed){
     vector<vector<MinimalIndividual*>> alg2ParetoFronts;
     vector<vector<MinimalIndividual*>> alg3ParetoFronts;
     vector<vector<MinimalIndividual*>> alg4ParetoFronts;
+    vector<vector<MinimalIndividual*>> alg5ParetoFronts;
 
     int alg1Its=0;
-    alg1ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg1Its, 0.0, 0.8, 0);
+    alg1ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg1Its, 0.0, 1.0, 0);
     int alg2Its=0;
-    alg2ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg2Its, 0.3, 0.8, 0);
+    alg2ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg2Its, 0.25, 1.0, 0);
     int alg3Its=0;
-    alg3ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg3Its, 0.6, 0.8, 0);
+    alg3ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg3Its, 0.5, 1.0, 0);
     int alg4Its=0;
-    alg4ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg4Its, 0.9, 0.8, 0);
+    alg4ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg4Its, 0.75, 1.0, 0);
+    int alg5Its=0;
+    alg5ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg5Its, 1.0, 1.0, 0);
 
     vector<MinimalIndividual*> alg1UnifiedParetoArchive = joinFronts(alg1ParetoFronts);
     vector<vector<MinimalIndividual*>> alg1FirstFront = Util::fastNonDominatedSort(alg1UnifiedParetoArchive);
@@ -90,28 +93,35 @@ string runCrossoverExperiment(string path, int iterations, int baseSeed){
     vector<MinimalIndividual*> alg4UnifiedParetoArchive = joinFronts(alg4ParetoFronts);
     vector<vector<MinimalIndividual*>> alg4FirstFront = Util::fastNonDominatedSort(alg4UnifiedParetoArchive);
 
+    vector<MinimalIndividual*> alg5UnifiedParetoArchive = joinFronts(alg5ParetoFronts);
+    vector<vector<MinimalIndividual*>> alg5FirstFront = Util::fastNonDominatedSort(alg5UnifiedParetoArchive);
 
-    vector<vector<MinimalIndividual*>> allAlgsFronts{alg1UnifiedParetoArchive, alg2UnifiedParetoArchive, alg3UnifiedParetoArchive, alg4UnifiedParetoArchive};
+
+    vector<vector<MinimalIndividual*>> allAlgsFronts{alg1UnifiedParetoArchive, alg2UnifiedParetoArchive, alg3UnifiedParetoArchive, alg4UnifiedParetoArchive, alg5UnifiedParetoArchive};
     vector<MinimalIndividual*> trueParetoFront = joinFronts(allAlgsFronts);
     trueParetoFront = Util::fastNonDominatedSort(trueParetoFront)[0];
 
-    csv += algorithmCSV(path, "alg1", baseSeed, alg1Its, iterations, alg1FirstFront.size(), trueParetoFront,
+    csv += algorithmCSV(path, "alg1", baseSeed, alg1Its, iterations, alg1FirstFront[0].size(), trueParetoFront,
                         alg1ParetoFronts);
 
-    csv += algorithmCSV(path, "alg2", baseSeed, alg2Its, iterations, alg2FirstFront.size(), trueParetoFront,
+    csv += algorithmCSV(path, "alg2", baseSeed, alg2Its, iterations, alg2FirstFront[0].size(), trueParetoFront,
                         alg2ParetoFronts);
 
-    csv += algorithmCSV(path, "alg3", baseSeed, alg3Its, iterations, alg3FirstFront.size(), trueParetoFront,
+    csv += algorithmCSV(path, "alg3", baseSeed, alg3Its, iterations, alg3FirstFront[0].size(), trueParetoFront,
                         alg3ParetoFronts);
 
-    csv += algorithmCSV(path, "alg4", baseSeed, alg4Its, iterations, alg4FirstFront.size(), trueParetoFront,
+    csv += algorithmCSV(path, "alg4", baseSeed, alg4Its, iterations, alg4FirstFront[0].size(), trueParetoFront,
                         alg4ParetoFronts);
+
+    csv += algorithmCSV(path, "alg5", baseSeed, alg5Its, iterations, alg5FirstFront[0].size(), trueParetoFront,
+                        alg5ParetoFronts);
 
 
     deallocateMinimalIndivduals(alg1UnifiedParetoArchive);
     deallocateMinimalIndivduals(alg2UnifiedParetoArchive);
     deallocateMinimalIndivduals(alg3UnifiedParetoArchive);
     deallocateMinimalIndivduals(alg4UnifiedParetoArchive);
+    deallocateMinimalIndivduals(alg5UnifiedParetoArchive);
    // Util::deallocate();
 
     return csv;
@@ -131,7 +141,7 @@ string runAlgorithmComparisonExperiment(string path, int iterations, int baseSee
     int alg2Its=0;
     alg2ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg2Its, 0.0, 1.0, 1);
     int alg3Its=0;
-    alg3ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg3Its, 0.0, 1.0, 0);
+    alg3ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg3Its, 0.0, 1.0, 2);
     int alg4Its=0;
     alg4ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg4Its, 0.0, 1.0, 0);
 
@@ -152,16 +162,16 @@ string runAlgorithmComparisonExperiment(string path, int iterations, int baseSee
     vector<MinimalIndividual*> trueParetoFront = joinFronts(allAlgsFronts);
     trueParetoFront = Util::fastNonDominatedSort(trueParetoFront)[0];
 
-    csv += algorithmCSV(path, "alg1", baseSeed, alg1Its, iterations, alg1FirstFront.size(), trueParetoFront,
+    csv += algorithmCSV(path, "alg1", baseSeed, alg1Its, iterations, alg1FirstFront[0].size(), trueParetoFront,
                         alg1ParetoFronts);
 
-    csv += algorithmCSV(path, "alg2", baseSeed, alg2Its, iterations, alg2FirstFront.size(), trueParetoFront,
+    csv += algorithmCSV(path, "alg2", baseSeed, alg2Its, iterations, alg2FirstFront[0].size(), trueParetoFront,
                         alg2ParetoFronts);
 
-    csv += algorithmCSV(path, "alg3", baseSeed, alg3Its, iterations, alg3FirstFront.size(), trueParetoFront,
+    csv += algorithmCSV(path, "alg3", baseSeed, alg3Its, iterations, alg3FirstFront[0].size(), trueParetoFront,
                         alg3ParetoFronts);
 
-    csv += algorithmCSV(path, "alg4", baseSeed, alg4Its, iterations, alg4FirstFront.size(), trueParetoFront,
+    csv += algorithmCSV(path, "alg4", baseSeed, alg4Its, iterations, alg4FirstFront[0].size(), trueParetoFront,
                         alg4ParetoFronts);
 
 
@@ -177,8 +187,9 @@ string runAlgorithmComparisonExperiment(string path, int iterations, int baseSee
 
 int main()
 {
-    string expResults = runAlgorithmComparisonExperiment("../instances/294/3-4-20__75.txt", 1, 0);
+    string expResults = "";
     Util::outputToFile("results.csv", "id, alg, baseSeed, iterations, nsgaIterations, N, D(antiga), GD, IGD, S, HV\n", true);
+    expResults = runCrossoverExperiment("../instances/294/3-4-20__75.txt", 1, 0);
     Util::outputToFile("results.csv", expResults , true);
 
     return 0;
