@@ -18,7 +18,7 @@ vector<T*> joinFronts(vector<vector<T*>> fronts){
     return result;
 }
 
-vector<vector<MinimalIndividual*>> runAlgorithmGetAchives(string path, int iterations, int baseSeed, int &totalIterations, float crossoverProbability, float mutationProbability){
+vector<vector<MinimalIndividual*>> runAlgorithmGetAchives(string path, int iterations, int baseSeed, int &totalIterations, float crossoverProbability, float mutationProbability, int option){
 
     //string csv = "id,baseSeed,iterations,nsgaIterations,N,D(antiga), GD, IGD, S\n";
     string csv = "";
@@ -30,7 +30,7 @@ vector<vector<MinimalIndividual*>> runAlgorithmGetAchives(string path, int itera
 
     for(int i=0; i<iterations; i++){
         NSGAII nsgaii = NSGAII(instance, crossoverProbability, mutationProbability);
-        nsgaii.run(baseSeed+i);
+        nsgaii.run(baseSeed+i, 500, instance->getN() / 2, option);
         nsgaIterationsSum += nsgaii.getNumIterations();
         paretoArchive.push_back(nsgaii.getMinimalParetoFront());
     }
@@ -60,7 +60,7 @@ void deallocateMinimalIndivduals(vector<MinimalIndividual*> individuals){
     }
 }
 
-string runExperiment(string path, int iterations,int baseSeed){
+string runCrossoverExperiment(string path, int iterations, int baseSeed){
     string csv = "";
 
     vector<vector<MinimalIndividual*>> alg1ParetoFronts;
@@ -69,13 +69,13 @@ string runExperiment(string path, int iterations,int baseSeed){
     vector<vector<MinimalIndividual*>> alg4ParetoFronts;
 
     int alg1Its=0;
-    alg1ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg1Its, 0.0, 0.8);
+    alg1ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg1Its, 0.0, 0.8, 0);
     int alg2Its=0;
-    alg2ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg2Its, 0.0, 0.8);
+    alg2ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg2Its, 0.3, 0.8, 0);
     int alg3Its=0;
-    alg3ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg3Its, 0.0, 0.8);
+    alg3ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg3Its, 0.6, 0.8, 0);
     int alg4Its=0;
-    alg4ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg4Its, 0.0, 0.8);
+    alg4ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg4Its, 0.9, 0.8, 0);
 
     vector<MinimalIndividual*> alg1UnifiedParetoArchive = joinFronts(alg1ParetoFronts);
     vector<vector<MinimalIndividual*>> alg1FirstFront = Util::fastNonDominatedSort(alg1UnifiedParetoArchive);
@@ -117,13 +117,70 @@ string runExperiment(string path, int iterations,int baseSeed){
 
 }
 
+string runAlgorithmComparisonExperiment(string path, int iterations, int baseSeed){
+    string csv = "";
+
+    vector<vector<MinimalIndividual*>> alg1ParetoFronts;
+    vector<vector<MinimalIndividual*>> alg2ParetoFronts;
+    vector<vector<MinimalIndividual*>> alg3ParetoFronts;
+    vector<vector<MinimalIndividual*>> alg4ParetoFronts;
+
+    int alg1Its=0;
+    alg1ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg1Its, 0.6, 0.8, 0);
+    int alg2Its=0;
+    alg2ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg2Its, 0.0, 1.0, 1);
+    int alg3Its=0;
+    alg3ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg3Its, 0.0, 1.0, 0);
+    int alg4Its=0;
+    alg4ParetoFronts = runAlgorithmGetAchives(path, iterations, baseSeed, alg4Its, 0.0, 1.0, 0);
+
+    vector<MinimalIndividual*> alg1UnifiedParetoArchive = joinFronts(alg1ParetoFronts);
+    vector<vector<MinimalIndividual*>> alg1FirstFront = Util::fastNonDominatedSort(alg1UnifiedParetoArchive);
+
+    vector<MinimalIndividual*> alg2UnifiedParetoArchive = joinFronts(alg2ParetoFronts);
+    vector<vector<MinimalIndividual*>> alg2FirstFront = Util::fastNonDominatedSort(alg2UnifiedParetoArchive);
+
+    vector<MinimalIndividual*> alg3UnifiedParetoArchive = joinFronts(alg3ParetoFronts);
+    vector<vector<MinimalIndividual*>> alg3FirstFront = Util::fastNonDominatedSort(alg3UnifiedParetoArchive);
+
+    vector<MinimalIndividual*> alg4UnifiedParetoArchive = joinFronts(alg4ParetoFronts);
+    vector<vector<MinimalIndividual*>> alg4FirstFront = Util::fastNonDominatedSort(alg4UnifiedParetoArchive);
+
+
+    vector<vector<MinimalIndividual*>> allAlgsFronts{alg1UnifiedParetoArchive, alg2UnifiedParetoArchive, alg3UnifiedParetoArchive, alg4UnifiedParetoArchive};
+    vector<MinimalIndividual*> trueParetoFront = joinFronts(allAlgsFronts);
+    trueParetoFront = Util::fastNonDominatedSort(trueParetoFront)[0];
+
+    csv += algorithmCSV(path, "alg1", baseSeed, alg1Its, iterations, alg1FirstFront.size(), trueParetoFront,
+                        alg1ParetoFronts);
+
+    csv += algorithmCSV(path, "alg2", baseSeed, alg2Its, iterations, alg2FirstFront.size(), trueParetoFront,
+                        alg2ParetoFronts);
+
+    csv += algorithmCSV(path, "alg3", baseSeed, alg3Its, iterations, alg3FirstFront.size(), trueParetoFront,
+                        alg3ParetoFronts);
+
+    csv += algorithmCSV(path, "alg4", baseSeed, alg4Its, iterations, alg4FirstFront.size(), trueParetoFront,
+                        alg4ParetoFronts);
+
+
+    deallocateMinimalIndivduals(alg1UnifiedParetoArchive);
+    deallocateMinimalIndivduals(alg2UnifiedParetoArchive);
+    deallocateMinimalIndivduals(alg3UnifiedParetoArchive);
+    deallocateMinimalIndivduals(alg4UnifiedParetoArchive);
+    // Util::deallocate();
+
+    return csv;
+
+}
+
 int main()
 {
-    //string expResults = runExperiment("../instances/294/3-4-20__75.txt", 1, 0);
-    //Util::outputToFile("results.csv", "id,alg,baseSeed,iterations,nsgaIterations,N,D(antiga), GD, IGD, S\n", true);
-    //Util::outputToFile("results.csv", expResults , true);
+    string expResults = runAlgorithmComparisonExperiment("../instances/294/3-4-20__75.txt", 1, 0);
+    Util::outputToFile("results.csv", "id,alg,baseSeed,iterations,nsgaIterations,N,D(antiga), GD, IGD, S\n", true);
+    Util::outputToFile("results.csv", expResults , true);
 
-   // return 0;
+    return 0;
     cout << "Hello" << endl;
 
     cout << "Iniciando leitura da instância...\n" << endl;
@@ -142,7 +199,7 @@ int main()
 
     // Run NSGA-II
     int seed = 111;
-    nsgaii.run(seed);
+    nsgaii.run(seed, 1000, instance->getN()/2, 0);
 
     cout << "\nFIM\n";
     //Util::deallocate();

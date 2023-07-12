@@ -71,7 +71,7 @@ public:
     Individual *INGM_V2(Individual *sol, int seed);
 
     // Run methods
-    void run(int seed);
+    void run(int seed, int iterationsLimit, float timeLimit, int option);
     vector<Individual *> makeChildren(int seed);
     void NSGA2NextGeneration(int seed);
 

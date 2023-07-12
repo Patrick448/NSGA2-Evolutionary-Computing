@@ -1153,15 +1153,8 @@ void NSGAII::NSGA2NextGeneration(int seed) {
         }
     }
 
-    //::assignCrowdingDistance(fronts.back());
-    /*if(nextGen.size() + fronts[l].size() == n){
-        nextGen.reserve(fronts[l].size());
-        nextGen.insert(nextGen.end(), fronts[l].begin(), fronts[l].end());
-    }*/
-
     int lastIndIndex=fronts[l].size()-1;
     if (nextGen.size() < n) {
-        // nextGen.reserve(n);
         sort(fronts[l].begin(), fronts[l].end(), crowdedCompare);
         for (int i = 0; nextGen.size() < n; i++) {
             nextGen.push_back(fronts[l][i]);
@@ -1172,13 +1165,11 @@ void NSGAII::NSGA2NextGeneration(int seed) {
     //int count = 0;
     for(int j=lastIndIndex+1; j<fronts[l].size(); j++){
         delete fronts[l][j];
-        //count ++;
     }
 
     for(int i=l+1; i<fronts.size(); i++){
         for(int j=0; j<fronts[i].size(); j++){
             delete fronts[i][j];
-            //count ++;
         }
     }
 
@@ -1222,20 +1213,27 @@ void NSGAII::NSGA2NextGen(int seed) {
 
         for (int j = 0; j < fronts[i].size(); j++) {
             nextGen.push_back(fronts[i][j]);
+            l=i;
             inserted++;
         }
     }
 
-    //::assignCrowdingDistance(fronts.back());
-    /*if(nextGen.size() + fronts[l].size() == n){
-        nextGen.reserve(fronts[l].size());
-        nextGen.insert(nextGen.end(), fronts[l].begin(), fronts[l].end());
-    }*/
+    int lastIndIndex=fronts[l].size()-1;
     if (nextGen.size() < n) {
-        // nextGen.reserve(n);
         sort(fronts[l].begin(), fronts[l].end(), crowdedCompare);
         for (int i = 0; nextGen.size() < n; i++) {
             nextGen.push_back(fronts[l][i]);
+            lastIndIndex = i;
+        }
+    }
+
+    for(int j=lastIndIndex+1; j<fronts[l].size(); j++){
+        delete fronts[l][j];
+    }
+
+    for(int i=l+1; i<fronts.size(); i++){
+        for(int j=0; j<fronts[i].size(); j++){
+            delete fronts[i][j];
         }
     }
 
@@ -1274,20 +1272,27 @@ void NSGAII::NSGA2NextGen_operators(int seed) {
 
         for (int j = 0; j < fronts[i].size(); j++) {
             nextGen.push_back(fronts[i][j]);
+            l=i;
             inserted++;
         }
     }
 
-    //::assignCrowdingDistance(fronts.back());
-    /*if(nextGen.size() + fronts[l].size() == n){
-        nextGen.reserve(fronts[l].size());
-        nextGen.insert(nextGen.end(), fronts[l].begin(), fronts[l].end());
-    }*/
+    int lastIndIndex=fronts[l].size()-1;
     if (nextGen.size() < n) {
-        // nextGen.reserve(n);
         sort(fronts[l].begin(), fronts[l].end(), crowdedCompare);
         for (int i = 0; nextGen.size() < n; i++) {
             nextGen.push_back(fronts[l][i]);
+            lastIndIndex = i;
+        }
+    }
+
+    for(int j=lastIndIndex+1; j<fronts[l].size(); j++){
+        delete fronts[l][j];
+    }
+
+    for(int i=l+1; i<fronts.size(); i++){
+        for(int j=0; j<fronts[i].size(); j++){
+            delete fronts[i][j];
         }
     }
 
@@ -1326,22 +1331,30 @@ void NSGAII::NSGA2NextGen_operators_ND(int seed) {
 
         for (int j = 0; j < fronts[i].size(); j++) {
             nextGen.push_back(fronts[i][j]);
+            l=i;
             inserted++;
         }
     }
 
-    //::assignCrowdingDistance(fronts.back());
-    /*if(nextGen.size() + fronts[l].size() == n){
-        nextGen.reserve(fronts[l].size());
-        nextGen.insert(nextGen.end(), fronts[l].begin(), fronts[l].end());
-    }*/
+    int lastIndIndex=fronts[l].size()-1;
     if (nextGen.size() < n) {
-        // nextGen.reserve(n);
         sort(fronts[l].begin(), fronts[l].end(), crowdedCompare);
         for (int i = 0; nextGen.size() < n; i++) {
             nextGen.push_back(fronts[l][i]);
+            lastIndIndex = i;
         }
     }
+
+    for(int j=lastIndIndex+1; j<fronts[l].size(); j++){
+        delete fronts[l][j];
+    }
+
+    for(int i=l+1; i<fronts.size(); i++){
+        for(int j=0; j<fronts[i].size(); j++){
+            delete fronts[i][j];
+        }
+    }
+
 
     this->population = nextGen;
 }
@@ -2225,7 +2238,7 @@ vector<Individual *> NSGAII::makenewpop_operators_ND(vector<Individual *> parent
 //     return csv;
 // }
 
-void NSGAII::run(int seed) {
+void NSGAII::run(int seed, int iterationsLimit, float timeLimit, int option) {
     //cout << "running experiment " << seed << endl;
     clock_t start, end;
 
@@ -2275,12 +2288,19 @@ void NSGAII::run(int seed) {
         double time_taken = double(end - start) / double(CLOCKS_PER_SEC);
 
         //cout << "counter: " << counter << " time: " << time_taken << endl;
-        if (time_taken > this->problem->getN() / 2 || counter >= 1000) {
+        if (time_taken > timeLimit || counter >= iterationsLimit) {
             cout << "Time's up! " << counter << " iterations in " << time_taken << " seconds" << endl;
             break;
         }
 
-        this->NSGA2NextGeneration(counter + seed);
+        if(option==0){
+            this->NSGA2NextGeneration(counter + seed);
+        }else if(option==1){
+            this->NSGA2NextGen(counter + seed);}
+        else if(option==2){
+            this->NSGA2NextGen_operators_ND(counter + seed);
+        }
+
         counter++;
 
         if (this->outputEnabled) {
