@@ -467,3 +467,65 @@ void Util::checkDuplicateIndividualsAtFile(string path)
         cout << "No duplicates found at " << path << endl;
     }
 }
+
+// Hypervolume metric
+float Util::hypervolumeMetric(vector<MinimalIndividual*> &PF)
+{
+    // Get the reference point (Nadir point)
+    // The approximate Nadir point is the worst value of each objective
+    // The approx Nadir point will have the TFT of the best solution in TEC and the TEC of the best solution in TFT
+    float tftAux = PF[0]->getTFT();
+    float tecAux = PF[0]->getTEC();
+    int indexMinTFT = 0;
+    int indexMinTEC = 0;
+    for(int i = 0; i < PF.size(); i++)
+    {
+        if(PF[i]->getTFT() < tftAux)
+        {
+            tftAux = PF[i]->getTFT();
+            indexMinTFT = i;
+        }
+        if(PF[i]->getTEC() < tecAux)
+        {
+            tecAux = PF[i]->getTEC();
+            indexMinTEC = i;
+        }
+    }
+    float referencePointTFT = PF[indexMinTEC]->getTFT();
+    float referencePointTEC = PF[indexMinTFT]->getTEC();
+
+    // Create a new PF with the normalized values
+    // TODO: Check if it is really necessary
+    vector<MinimalIndividual*> normalizedPF;
+    for(int i = 0; i < PF.size(); i++)
+    {
+        float normalizedTFT = PF[i]->getTFT() / referencePointTFT;
+        float normalizedTEC = PF[i]->getTEC() / referencePointTEC;
+        MinimalIndividual* normalizedIndividual(PF[i]);
+        normalizedIndividual->setTFT(normalizedTFT);
+        normalizedIndividual->setTEC(normalizedTEC);
+        normalizedPF.push_back(normalizedIndividual);
+    }
+
+    // Sort the normalized PF by TEC
+    sort(normalizedPF.begin(), normalizedPF.end(), [](MinimalIndividual* a, MinimalIndividual* b) {
+        return a->getTEC() < b->getTEC();
+    });
+
+    // Calculate the hypervolume
+    float hypervolume = 0;
+    float width = 0;
+    float height = 0;
+    for(int i = 0; i < normalizedPF.size()-1; i++)
+    {
+        width = normalizedPF[i+1]->getTEC() - normalizedPF[i]->getTEC();
+        height = referencePointTFT - normalizedPF[i]->getTFT();
+        hypervolume += width * height;
+    }
+    // Add the last rectangle
+    width = referencePointTEC - normalizedPF[normalizedPF.size()-1]->getTEC();
+    height = referencePointTFT - normalizedPF[normalizedPF.size()-1]->getTFT();
+    hypervolume += width * height;
+
+    return hypervolume;
+}

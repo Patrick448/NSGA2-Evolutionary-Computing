@@ -9,6 +9,7 @@
 #include "Individual.hpp"
 #include "Factory.hpp"
 #include "MinimalIndividual.h"
+#include "Problem.hpp"
 
 class Util {
 
@@ -42,7 +43,7 @@ public:
     static void outputToFile(string path, string text, bool append);
     static void checkDuplicateIndividualsAtFile(string path);
 
-
+    static float hypervolumeMetric(vector<MinimalIndividual*> &PF);
     };
 
 #endif //UTIL_H

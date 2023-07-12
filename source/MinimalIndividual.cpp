@@ -52,7 +52,18 @@ void MinimalIndividual::setDominationRank(int val)
 {
     this->dominationRank = val;
 }
+
 void MinimalIndividual::setDominationCounter(int val)
 {
     this->dominationCounter = val;
+}
+
+void MinimalIndividual::setTEC(float TEC)
+{
+    this->tec = TEC;
+}
+
+void MinimalIndividual::setTFT(float TFT)
+{
+    this->tft = TFT;
 }

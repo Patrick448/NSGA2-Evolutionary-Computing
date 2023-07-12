@@ -29,7 +29,8 @@ public:
     void incrementDominationCounter(int val);
     bool dominates(MinimalIndividual *other); // true if this instance dominates other
     void setDominationRank(int val);
-
+    void setTEC(float TEC);
+    void setTFT(float TFT);
 
 };
 
